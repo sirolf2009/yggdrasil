@@ -1,15 +1,15 @@
 package com.sirolf2009.yggdrasil.vor;
 
 import com.sirolf2009.yggdrasil.sif.TrainingData;
+import com.sirolf2009.yggdrasil.sif.saver.SaversFile;
 import com.sirolf2009.yggdrasil.vor.Predict;
 import com.sirolf2009.yggdrasil.vor.RNN;
 import com.sirolf2009.yggdrasil.vor.data.Arguments;
 import com.sirolf2009.yggdrasil.vor.data.DataFormat;
-import com.sirolf2009.yggdrasil.vor.data.Loaders;
 import com.sirolf2009.yggdrasil.vor.data.PrepareData;
-import com.sirolf2009.yggdrasil.vor.data.Savers;
 import com.sirolf2009.yggdrasil.vor.data.TrainAndTestData;
 import java.io.File;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -39,10 +39,9 @@ public class Vor {
   
   public static void train(@Extension final Arguments arguments) {
     try {
-      File _file = new File("data/orderbook.csv");
-      List<String> _get = new Loaders.FileLines(_file).get();
+      List<String> _readAllLines = Files.readAllLines(new File("data/orderbook.csv").toPath());
       @Extension
-      final DataFormat format = new PrepareData(Vor.baseDir, _get, (60 * 15), 5).call();
+      final DataFormat format = new PrepareData(Vor.baseDir, _readAllLines, (60 * 15), 5).call();
       @Extension
       final TrainAndTestData datasets = Vor.getData(format);
       StringConcatenation _builder = new StringConcatenation();
@@ -59,8 +58,8 @@ public class Vor {
       final Consumer<Integer> _function = (Integer it) -> {
         net.fit(datasets.getTrainData());
         datasets.getTrainData().reset();
-        File _file_1 = new File((("data/predict/predict_" + it) + ".zip"));
-        new Savers.NetToFile(_file_1).accept(net);
+        File _file = new File((("data/predict/predict_" + it) + ".zip"));
+        new SaversFile.NetToFile(_file).accept(net);
         final Consumer<List<INDArray>> _function_1 = (List<INDArray> it_1) -> {
           Predict.predict(net, it_1, (60 * 15));
         };

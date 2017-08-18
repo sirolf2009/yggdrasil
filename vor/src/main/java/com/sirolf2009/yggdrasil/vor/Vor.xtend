@@ -1,13 +1,13 @@
 package com.sirolf2009.yggdrasil.vor
 
 import com.sirolf2009.yggdrasil.sif.TrainingData
+import com.sirolf2009.yggdrasil.sif.saver.SaversFile.NetToFile
 import com.sirolf2009.yggdrasil.vor.data.Arguments
 import com.sirolf2009.yggdrasil.vor.data.DataFormat
-import com.sirolf2009.yggdrasil.vor.data.Loaders.FileLines
 import com.sirolf2009.yggdrasil.vor.data.PrepareData
-import com.sirolf2009.yggdrasil.vor.data.Savers.NetToFile
 import com.sirolf2009.yggdrasil.vor.data.TrainAndTestData
 import java.io.File
+import java.nio.file.Files
 import org.apache.logging.log4j.LogManager
 import org.datavec.api.records.reader.impl.csv.CSVSequenceRecordReader
 import org.datavec.api.split.NumberedFileInputSplit
@@ -26,7 +26,7 @@ class Vor {
 	}
 
 	def static train(extension Arguments arguments) {
-		extension val format = new PrepareData(baseDir, new FileLines(new File("data/orderbook.csv")).get(), 60*15, 5).call()
+		extension val format = new PrepareData(baseDir, Files.readAllLines(new File("data/orderbook.csv").toPath()), 60*15, 5).call()
 		extension val datasets = getData(format)
 		val predictData = TrainingData.getPredictData('''http://«influxHost»:«influxPort»''', 60*15)
 		val net = new RNN(format).get()
