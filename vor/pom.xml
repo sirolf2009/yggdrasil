@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>parent</artifactId>
+		<groupId>com.sirolf2009.yggdrasil</groupId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>vor</artifactId>
+	<name>Vör - Godess of wisdom - Machine Learning</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.beust</groupId>
+			<artifactId>jcommander</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.deeplearning4j</groupId>
+			<artifactId>deeplearning4j-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.nd4j</groupId>
+			<artifactId>nd4j-native-platform</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.influxdb</groupId>
+			<artifactId>influxdb-java</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.sirolf2009.yggdrasil</groupId>
+			<artifactId>sif</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>appassembler-maven-plugin</artifactId>
+				<version>2.0.0</version>
+				<configuration>
+					<programs>
+						<program>
+							<mainClass>com.sirolf2009.yggdrasil.vor.data.Data</mainClass>
+							<name>data</name>
+						</program>
+					</programs>
+					<assembleDirectory>${project.build.directory}/Vor</assembleDirectory>
+					<repositoryName>lib</repositoryName>
+					<repositoryLayout>flat</repositoryLayout>
+				</configuration>
+				<executions>
+					<execution>
+						<id>assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>assemble</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

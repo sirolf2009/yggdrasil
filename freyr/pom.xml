@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>parent</artifactId>
+		<groupId>com.sirolf2009.yggdrasil</groupId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>freyr</artifactId>
+	<name>Freyr - God of fertility - Data collector</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.knowm.xchange</groupId>
+			<artifactId>xchange-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.knowm.xchange</groupId>
+			<artifactId>xchange-bitfinex</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.knowm.xchange</groupId>
+			<artifactId>xchange-gdax</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.beust</groupId>
+			<artifactId>jcommander</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.influxdb</groupId>
+			<artifactId>influxdb-java</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>appassembler-maven-plugin</artifactId>
+				<version>2.0.0</version>
+				<configuration>
+					<programs>
+						<program>
+							<mainClass>com.sirolf2009.yggdrasil.freyr.Freyr</mainClass>
+							<name>freyr</name>
+						</program>
+					</programs>
+					<assembleDirectory>${project.build.directory}/freyr</assembleDirectory>
+					<repositoryName>lib</repositoryName>
+					<repositoryLayout>flat</repositoryLayout>
+				</configuration>
+				<executions>
+					<execution>
+						<id>assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>assemble</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
