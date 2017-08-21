@@ -16,6 +16,7 @@ class OrderPoints {
 
 	public static Function<List<OrderPoint>, List<OrderPoint>> normalize = [
 		log.info("Normalizing")
+		//THIS IS BROKEN. I THINK WE'RE GETTING THE RAW UNSORTED LIST. WHICH MEANS THAT 0 AND 30 WILL JUST BE RANDOM LIMIT ORDERS
 		val maxBid = get(0).value
 		val minAsk = get(30).value
 		val halfPrice = minAsk - maxBid

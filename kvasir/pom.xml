@@ -10,7 +10,7 @@
 	</parent>
 	<artifactId>kvasir</artifactId>
 	<name>Kvasir - God of inspiration - Charting</name>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>org.knowm.xchart</groupId>
@@ -19,6 +19,35 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>tech.tablesaw</groupId>
+			<artifactId>tablesaw-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>tech.tablesaw</groupId>
+			<artifactId>tablesaw-plot</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.processing</groupId>
+			<artifactId>core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.jagracar</groupId>
+			<artifactId>grafica</artifactId>
+			<version>1.7.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/lib/grafica.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>com.sirolf2009.yggdrasil</groupId>
+			<artifactId>freyr</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sirolf2009.yggdrasil</groupId>
+			<artifactId>sif</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 

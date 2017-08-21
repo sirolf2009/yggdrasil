@@ -25,10 +25,16 @@ public class Arguments {
   private int datapoints = 50000;
   
   @Parameter(names = "-b", description = "The amount of datapoints to download per batch")
-  private int datapointsBatch = 5000;
+  private int datapointsBatch = 1000;
   
   @Parameter(names = "-np", description = "The amount of datapoints to download for predictions")
   private int datapointsPrediction = 5000;
+  
+  @Parameter(names = "-s", description = "The amount of steps to use before making a prediction")
+  private int steps = 60;
+  
+  @Parameter(names = "-mb", description = "The size of the mini batches")
+  private int minibatch = 5;
   
   @Pure
   public String getInfluxHost() {
@@ -84,6 +90,24 @@ public class Arguments {
     this.datapointsPrediction = datapointsPrediction;
   }
   
+  @Pure
+  public int getSteps() {
+    return this.steps;
+  }
+  
+  public void setSteps(final int steps) {
+    this.steps = steps;
+  }
+  
+  @Pure
+  public int getMinibatch() {
+    return this.minibatch;
+  }
+  
+  public void setMinibatch(final int minibatch) {
+    this.minibatch = minibatch;
+  }
+  
   @Override
   @Pure
   public boolean equals(final Object obj) {
@@ -112,6 +136,10 @@ public class Arguments {
       return false;
     if (other.datapointsPrediction != this.datapointsPrediction)
       return false;
+    if (other.steps != this.steps)
+      return false;
+    if (other.minibatch != this.minibatch)
+      return false;
     return true;
   }
   
@@ -126,6 +154,8 @@ public class Arguments {
     result = prime * result + this.datapoints;
     result = prime * result + this.datapointsBatch;
     result = prime * result + this.datapointsPrediction;
+    result = prime * result + this.steps;
+    result = prime * result + this.minibatch;
     return result;
   }
   
@@ -139,6 +169,8 @@ public class Arguments {
     b.add("datapoints", this.datapoints);
     b.add("datapointsBatch", this.datapointsBatch);
     b.add("datapointsPrediction", this.datapointsPrediction);
+    b.add("steps", this.steps);
+    b.add("minibatch", this.minibatch);
     return b.toString();
   }
 }

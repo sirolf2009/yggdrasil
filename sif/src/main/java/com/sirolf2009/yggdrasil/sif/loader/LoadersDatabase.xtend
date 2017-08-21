@@ -1,29 +1,63 @@
 package com.sirolf2009.yggdrasil.sif.loader
 
+import com.google.gson.Gson
 import com.sirolf2009.yggdrasil.sif.model.OrderPoint
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.List
+import java.util.UUID
+import java.util.concurrent.TimeUnit
+import java.util.function.BinaryOperator
 import java.util.function.Function
 import java.util.function.Predicate
+import net.jodah.failsafe.Failsafe
+import net.jodah.failsafe.RetryPolicy
+import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.logging.log4j.LogManager
 import org.influxdb.InfluxDBFactory
+import org.influxdb.InfluxDBIOException
 import org.influxdb.dto.Query
 import org.influxdb.dto.QueryResult
 
 import static extension com.sirolf2009.yggdrasil.sif.StreamExtensions.*
-import java.util.function.BinaryOperator
 
 class LoadersDatabase {
 
 	static val log = LogManager.logger
-	static val batch = 5000
+	static val batch = 1000
 
 	def static getDatapoints(String influx, int orderPoints) {
 		val database = InfluxDBFactory.connect(influx)
 		val batchesToDownload = Math.ceil(orderPoints / batch) as int
 		(0 ..< batchesToDownload).toList().stream().map [
+			log.info('''(«it»/«batchesToDownload») SELECT "value", "amount" FROM "orderbook"."autogen"."gdax" GROUP BY "side", "index" LIMIT «batch» OFFSET «it*batch»''')
 			database.query(new Query('''SELECT "value", "amount" FROM "orderbook"."autogen"."gdax" GROUP BY "side", "index" LIMIT «batch» OFFSET «it*batch»''', "orderbook"))
 		].filter(hasData).reduce(combine).map(parseOrderbook)
+	}
+
+	def static getDatapointsLarge(String influx, int orderPoints, File dataFolder) {
+		dataFolder.listFiles.forEach[delete]
+		val database = InfluxDBFactory.connect(influx)
+		val batchesToDownload = Math.ceil(orderPoints / batch) as int
+		val policy = new RetryPolicy().retryOn(InfluxDBIOException).withBackoff(1, 10, TimeUnit.MINUTES).withMaxRetries(10)
+		(0 ..< batchesToDownload).toList().stream().map [
+			val query = '''SELECT "value", "amount" FROM "orderbook"."autogen"."gdax" GROUP BY "side", "index" LIMIT «batch» OFFSET «it*batch»'''
+			log.info(query)
+			Failsafe.with(policy).get[database.query(new Query(query, "orderbook"))]
+		].filter(hasData).forEach [
+			Files.write(Paths.get(dataFolder.absolutePath, UUID.randomUUID.toString()), new Gson().toJson(it).bytes)
+		]
+		return parseDatapoints(dataFolder)
+	}
+	
+	def static parseDatapoints(File folder) {
+		val result = folder.listFiles.map[
+			log.info("Parsing "+it)
+			new Gson().fromJson(FileUtils.readFileToString(it), QueryResult)
+		].reduce[a,b|combine.apply(a,b)]
+		return parseOrderbook.apply(result)
 	}
 
 	public static Function<QueryResult, List<OrderPoint>> parseOrderbook = [
@@ -51,7 +85,7 @@ class LoadersDatabase {
 	]
 
 	public static Predicate<QueryResult> hasData = [
-		if(error !== null) {
+		if(it !== null && error !== null) {
 			log.error(error)
 		}
 		return results !== null && results.size() > 0 && results.get(0).series !== null

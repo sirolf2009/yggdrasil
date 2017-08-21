@@ -20,6 +20,10 @@
 			<artifactId>deeplearning4j-core</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.deeplearning4j</groupId>
+			<artifactId>deeplearning4j-parallel-wrapper_2.11</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.nd4j</groupId>
 			<artifactId>nd4j-native-platform</artifactId>
 		</dependency>
@@ -37,7 +41,7 @@
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -47,11 +51,11 @@
 				<configuration>
 					<programs>
 						<program>
-							<mainClass>com.sirolf2009.yggdrasil.vor.data.Data</mainClass>
-							<name>data</name>
+							<mainClass>com.sirolf2009.yggdrasil.vor.Vor</mainClass>
+							<name>vor</name>
 						</program>
 					</programs>
-					<assembleDirectory>${project.build.directory}/Vor</assembleDirectory>
+					<assembleDirectory>${project.build.directory}/vor</assembleDirectory>
 					<repositoryName>lib</repositoryName>
 					<repositoryLayout>flat</repositoryLayout>
 				</configuration>

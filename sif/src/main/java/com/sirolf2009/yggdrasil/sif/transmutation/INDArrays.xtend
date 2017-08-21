@@ -22,4 +22,12 @@ class INDArrays {
 			].collect()
 		]
 	}
+
+	def static Function<List<INDArray>, List<List<Double>>> toMatrix() {
+		return [
+			map[
+				data.asDouble as List<Double>
+			].toList()
+		]
+	}
 }
