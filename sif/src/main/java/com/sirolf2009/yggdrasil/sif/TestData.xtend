@@ -2,15 +2,16 @@ package com.sirolf2009.yggdrasil.sif
 
 import static tech.tablesaw.api.ColumnType.*
 import tech.tablesaw.api.Table
+import java.io.InputStreamReader
 
 class TestData {
 
 	def static getOrderbookSimple() {
-		Table.createFromCsv(TestData.classLoader.getResourceAsStream("orderbook-simple.csv"), "Orderbook-Simple", OrderbookColumns, true)
+		Table.createFromCsv(new InputStreamReader(TestData.classLoader.getResourceAsStream("orderbook-simple.csv")), "Orderbook-Simple", OrderbookColumns, true)
 	}
 
 	def static getOrderbookRows() {
-		Table.createFromCsv(TestData.classLoader.getResourceAsStream("orderbook-rows.csv"), "Orderbook-Rows", OrderbookColumns, true)
+		Table.createFromCsv(new InputStreamReader(TestData.classLoader.getResourceAsStream("orderbook-rows.csv")), "Orderbook-Rows", OrderbookColumns, true)
 	}
 	
 	public static val OrderbookColumns = #[

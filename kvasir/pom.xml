@@ -33,11 +33,18 @@
 			<artifactId>core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.jagracar</groupId>
+			<groupId>com.github.jagracar</groupId>
 			<artifactId>grafica</artifactId>
 			<version>1.7.0</version>
 			<scope>system</scope>
 			<systemPath>${project.basedir}/src/main/lib/grafica.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>com.github.sojama</groupId>
+			<artifactId>controlP5</artifactId>
+			<version>2.2.26</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/lib/controlP5.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>com.sirolf2009.yggdrasil</groupId>

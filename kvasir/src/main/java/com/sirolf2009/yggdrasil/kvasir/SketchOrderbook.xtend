@@ -37,7 +37,7 @@ class SketchOrderbook extends PApplet {
 		orderbook.title.text = "Orderbook"
 		orderbook.startHistograms(GPlot.HORIZONTAL)
 		orderbook.drawHistLabels = true
-		orderbook.setDim(950, 780)
+		orderbook.setDim(900, 700)
 		orderbook.getHistogram().setBgColors(
 			Stream.concat(IntStream.range(0, 15).map[color(0, 255, 0, 200)].boxed, IntStream.range(0, 15).map[color(255, 0, 0, 200)].boxed).collect(Collectors.toList())
 		)

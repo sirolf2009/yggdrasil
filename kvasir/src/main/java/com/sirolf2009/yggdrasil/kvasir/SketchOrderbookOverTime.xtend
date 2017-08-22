@@ -1,5 +1,10 @@
 package com.sirolf2009.yggdrasil.kvasir
 
+import com.sirolf2009.yggdrasil.sif.TestData
+import com.sirolf2009.yggdrasil.sif.transmutation.OrderbookNormaliseDiffStdDev
+import controlP5.ControlP5
+import controlP5.ControlP5Constants
+import controlP5.Slider
 import grafica.GPlot
 import grafica.GPoint
 import grafica.GPointsArray
@@ -9,16 +14,21 @@ import java.util.stream.Stream
 import processing.core.PApplet
 import tech.tablesaw.api.DoubleColumn
 import tech.tablesaw.api.Table
-import com.sirolf2009.yggdrasil.sif.TestData
-import com.sirolf2009.yggdrasil.sif.transmutation.OrderbookNormaliseDiffStdDev
 
 class SketchOrderbookOverTime extends PApplet {
 
 	static val take = 15
+	static val color = ControlP5Constants.THEME_CP52014 => [
+		foreground = ControlP5Constants.BLUE
+		background = ControlP5Constants.WHITE
+		valueLabel = ControlP5Constants.FUCHSIA
+	]
 	val Table data
 	var GPlot orderbook
-	var row = 0
-	
+	var ControlP5 cp5
+	var Slider slider
+	var scroll = 0
+
 	new(Table data) {
 		this.data = data
 	}
@@ -32,11 +42,14 @@ class SketchOrderbookOverTime extends PApplet {
 		orderbook.points = new GPointsArray((0 ..< take * 2).toList().stream().flatMap[Stream.of(new GPoint(it * 2, 0, "price_" + it))].collect(Collectors.toList()))
 		orderbook.title.text = "Orderbook"
 		orderbook.startHistograms(GPlot.HORIZONTAL)
-		orderbook.drawHistLabels = true
-		orderbook.setDim(950, 780)
+		orderbook.setDim(900, 700)
+		orderbook.setPos(0, 0)
 		orderbook.getHistogram().setBgColors(
 			Stream.concat(IntStream.range(0, 15).map[color(0, 255, 0, 200)].boxed, IntStream.range(0, 15).map[color(255, 0, 0, 200)].boxed).collect(Collectors.toList())
 		)
+
+		cp5 = new ControlP5(this)
+		slider = cp5.addSlider("scroll").setPosition(40, 760).setRange(0, data.rowCount - 1).setWidth(950).setHeight(20).setColor(color)
 		frameRate(10)
 	}
 
@@ -46,7 +59,7 @@ class SketchOrderbookOverTime extends PApplet {
 		orderbook.points.NPoints = 0
 		data.columns.stream.skip(1).collect(Collectors.toList()).forEach [ it, index |
 			if(name.contains("price")) {
-				val value = Math.abs((it as DoubleColumn).get(row).floatValue())
+				val value = Math.abs((it as DoubleColumn).get(scroll).floatValue())
 				if(index < 30) {
 					val point = new GPoint(value, (15 - index / 2), name)
 					orderbook.setPoint(15 - index / 2, point)
@@ -58,6 +71,7 @@ class SketchOrderbookOverTime extends PApplet {
 		]
 		println("drawing")
 		orderbook => [
+			rect(39, 760+8, 951, 12)
 			beginDraw()
 			drawBackground()
 			drawBox()
@@ -66,12 +80,8 @@ class SketchOrderbookOverTime extends PApplet {
 			drawHistograms()
 			endDraw()
 		]
-		row += 1
-		if(row >= data.rowCount) {
-			row = 0
-		}
 	}
-	
+
 	def static create(Table data) {
 		runSketch(#[SketchOrderbookOverTime.name], new SketchOrderbookOverTime(data));
 	}
