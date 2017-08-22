@@ -17,7 +17,7 @@ import processing.core.PApplet
 import tech.tablesaw.api.DoubleColumn
 import tech.tablesaw.api.Table
 
-class SketchOrderbookLive extends PApplet {
+class SketchOrderbook extends PApplet {
 
 	static val take = 15
 	val Supplier<Table> supplier
@@ -74,9 +74,13 @@ class SketchOrderbookLive extends PApplet {
 			endDraw()
 		]
 	}
+	
+	def static create(Supplier<Table> supplier) {
+		runSketch(#[SketchOrderbook.name], new SketchOrderbook(supplier));
+	}
 
 	def static void main(String[] args) {
-		runSketch(#[SketchOrderbookLive.name], new SketchOrderbookLive(new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take)));
+		create(new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take))
 	}
 
 }
