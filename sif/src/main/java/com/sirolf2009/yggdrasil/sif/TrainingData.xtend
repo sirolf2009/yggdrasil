@@ -24,5 +24,9 @@ class TrainingData {
 	def static readPredictDataLarge(File folder) {
 		OrderPoints.normalize.andThen(OrderPoints.ordersToMatrix).andThen(INDArrays.createRNNDataSet(0)).apply(LoadersDatabase.parseDatapoints(folder))
 	}
+
+	def static readDataLargeToCSV(File folder) {
+		SaversFile.saveOrderbook.accept(OrderPoints.normalize.andThen(OrderPoints.ordersToMatrix).andThen(CSV.matrixToCSV).andThen(CSV.joinAsLines).apply(LoadersDatabase.parseDatapoints(folder)))
+	}
 	
 }

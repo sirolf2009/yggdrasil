@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavec.api.records.reader.impl.csv.CSVSequenceRecordReader;
@@ -67,6 +66,8 @@ public class Vor {
       if (_greaterThan_1) {
         throw new IllegalStateException("The prediction folder is not empty!");
       }
+      File _file = new File("data/orderbook");
+      TrainingData.readDataLargeToCSV(_file);
       List<String> _readAllLines = Files.readAllLines(new File("data/orderbook.csv").toPath());
       int _steps = arguments.getSteps();
       int _minibatch = arguments.getMinibatch();
@@ -74,23 +75,14 @@ public class Vor {
       final DataFormat format = new PrepareData(Vor.baseDir, _readAllLines, _steps, _minibatch).call();
       @Extension
       final TrainAndTestData datasets = Vor.getData(format);
-      File _file = new File("data/orderbook");
-      final List<INDArray> predictData = TrainingData.readPredictDataLarge(_file);
       final MultiLayerNetwork net = new RNN(format).get();
       final int epochs = 100;
       Vor.log.info("Training...");
       final Consumer<Integer> _function = (Integer it) -> {
-        try {
-          net.fit(datasets.getTrainData());
-          datasets.getTrainData().reset();
-          File _file_1 = new File(networkFolder, (("predict_" + it) + ".zip"));
-          new SaversFile.NetToFile(_file_1).accept(net);
-          final String prediction = INDArrays.toMatrix().<List<String>>andThen(CSV.matrixToCSV).<String>andThen(CSV.joinAsLines).apply(Predict.predict(net, predictData, (60 * 15)));
-          File _file_2 = new File(predictionFolder, (("predict_" + it) + ".csv"));
-          FileUtils.write(_file_2, prediction);
-        } catch (Throwable _e) {
-          throw Exceptions.sneakyThrow(_e);
-        }
+        net.fit(datasets.getTrainData());
+        datasets.getTrainData().reset();
+        File _file_1 = new File(networkFolder, (("predict_" + it) + ".zip"));
+        new SaversFile.NetToFile(_file_1).accept(net);
       };
       new ExclusiveRange(0, epochs, true).forEach(_function);
     } catch (Throwable _e) {

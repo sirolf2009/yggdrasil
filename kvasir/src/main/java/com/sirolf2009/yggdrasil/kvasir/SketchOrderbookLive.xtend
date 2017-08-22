@@ -8,20 +8,24 @@ import grafica.GPoint
 import grafica.GPointsArray
 import java.time.Duration
 import java.util.function.Supplier
+import java.util.stream.Collectors
+import java.util.stream.IntStream
+import java.util.stream.Stream
 import org.knowm.xchange.currency.CurrencyPair
 import org.knowm.xchange.gdax.GDAXExchange
 import processing.core.PApplet
-import tech.tablesaw.api.Table
 import tech.tablesaw.api.DoubleColumn
-import java.util.stream.Collectors
-import java.util.stream.Stream
-import java.util.stream.IntStream
+import tech.tablesaw.api.Table
 
 class SketchOrderbookLive extends PApplet {
 
 	static val take = 15
-	val Supplier<Table> supplier = new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take)
+	val Supplier<Table> supplier
 	var GPlot orderbook
+	
+	new(Supplier<Table> supplier) {
+		this.supplier = supplier
+	}
 
 	override settings() {
 		size(1024, 800)
@@ -72,7 +76,7 @@ class SketchOrderbookLive extends PApplet {
 	}
 
 	def static void main(String[] args) {
-		main(SketchOrderbookLive.name)
+		runSketch(#[SketchOrderbookLive.name], new SketchOrderbookLive(new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take)));
 	}
 
 }

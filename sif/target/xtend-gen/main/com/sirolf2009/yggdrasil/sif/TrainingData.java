@@ -28,4 +28,8 @@ public class TrainingData {
   public static List<INDArray> readPredictDataLarge(final File folder) {
     return OrderPoints.normalize.<List<List<Double>>>andThen(OrderPoints.ordersToMatrix).<List<INDArray>>andThen(INDArrays.createRNNDataSet(0)).apply(LoadersDatabase.parseDatapoints(folder));
   }
+  
+  public static void readDataLargeToCSV(final File folder) {
+    SaversFile.saveOrderbook.accept(OrderPoints.normalize.<List<List<Double>>>andThen(OrderPoints.ordersToMatrix).<List<String>>andThen(CSV.matrixToCSV).<String>andThen(CSV.joinAsLines).apply(LoadersDatabase.parseDatapoints(folder)));
+  }
 }
