@@ -16,7 +16,7 @@ class OrderbookNormaliseDiffStdDev implements Consumer<Table> {
 		Arrays.stream(rows).forEach [
 			val maxBid = maxBidColumn.get(it)
 			val minAsk = minAskColumn.get(it)
-			val halfPrice = minAsk - maxBid
+			val halfPrice = maxBid + (minAsk - maxBid)/2
 			priceColumns.forEach[column|
 				column.set(it, percentualDifference(column.get(it), halfPrice))
 			]

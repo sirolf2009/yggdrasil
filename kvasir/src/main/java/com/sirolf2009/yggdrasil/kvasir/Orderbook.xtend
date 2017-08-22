@@ -44,7 +44,7 @@ class Orderbook extends PApplet {
 		background(255)
 		println("getting data")
 		val data = supplier.get()
-		data.first(1).print
+		data.printArray
 		println("normalising")
 		new OrderbookNormaliseDiffStdDev().accept(data)
 		println("mapping")
