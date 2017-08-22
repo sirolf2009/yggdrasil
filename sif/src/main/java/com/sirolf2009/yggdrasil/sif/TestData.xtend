@@ -6,7 +6,14 @@ import tech.tablesaw.api.Table
 class TestData {
 
 	def static getOrderbookSimple() {
-		val columnTypes = #[
+		Table.createFromCsv(TestData.classLoader.getResourceAsStream("orderbook-simple.csv"), "Orderbook-Simple", OrderbookColumns, true)
+	}
+
+	def static getOrderbookRows() {
+		Table.createFromCsv(TestData.classLoader.getResourceAsStream("orderbook-rows.csv"), "Orderbook-Rows", OrderbookColumns, true)
+	}
+	
+	public static val OrderbookColumns = #[
 			LOCAL_DATE_TIME, // 0     datetime      
 			DOUBLE, // 1     bid_price_0   
 			DOUBLE, // 2     bid_amount_0  
@@ -69,7 +76,5 @@ class TestData {
 			DOUBLE, // 59    ask_price_14
 			DOUBLE  // 60    ask_amount_14
 		]
-		Table.createFromCsv(columnTypes, "src/test/resources/orderbook-simple.csv", true)
-	}
 
 }
