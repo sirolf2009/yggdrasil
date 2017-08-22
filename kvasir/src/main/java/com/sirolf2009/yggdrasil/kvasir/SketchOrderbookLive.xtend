@@ -17,7 +17,7 @@ import java.util.stream.Collectors
 import java.util.stream.Stream
 import java.util.stream.IntStream
 
-class Orderbook extends PApplet {
+class SketchOrderbookLive extends PApplet {
 
 	static val take = 15
 	val Supplier<Table> supplier = new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take)
@@ -30,7 +30,6 @@ class Orderbook extends PApplet {
 	override setup() {
 		orderbook = new GPlot(this)
 		orderbook.points = new GPointsArray((0 ..< take * 2).toList().stream().flatMap[Stream.of(new GPoint(it * 2, 0, "price_" + it))].collect(Collectors.toList()))
-//		orderbook.points = new GPointsArray(#[new GPoint(0, 1, "small"), new GPoint(1, 2, "large"), new GPoint(3, 1, "also small"), new GPoint(4, 2, "also large")])
 		orderbook.title.text = "Orderbook"
 		orderbook.startHistograms(GPlot.HORIZONTAL)
 		orderbook.drawHistLabels = true
@@ -44,16 +43,20 @@ class Orderbook extends PApplet {
 		background(255)
 		println("getting data")
 		val data = supplier.get()
-		data.printArray
 		println("normalising")
 		new OrderbookNormaliseDiffStdDev().accept(data)
 		println("mapping")
 		orderbook.points.NPoints = 0
 		data.columns.stream.skip(1).collect(Collectors.toList()).forEach [ it, index |
 			if(name.contains("price")) {
-				val value = (it as DoubleColumn).get(0).floatValue()
-				val point = new GPoint(value, index / 2, name)
-				orderbook.setPoint(index / 2, point)
+				val value = Math.abs((it as DoubleColumn).get(0).floatValue())
+				if(index < 30) {
+					val point = new GPoint(value, (15 - index / 2), name)
+					orderbook.setPoint(15 - index / 2, point)
+				} else {
+					val point = new GPoint(value, index / 2, name)
+					orderbook.setPoint(index / 2, point)
+				}
 			}
 		]
 		println("drawing")
@@ -69,7 +72,7 @@ class Orderbook extends PApplet {
 	}
 
 	def static void main(String[] args) {
-		main(Orderbook.name)
+		main(SketchOrderbookLive.name)
 	}
 
 }
