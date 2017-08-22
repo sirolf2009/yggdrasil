@@ -15,6 +15,7 @@ import tech.tablesaw.api.DateTimeColumn
 import tech.tablesaw.api.DoubleColumn
 import tech.tablesaw.api.Table
 import tech.tablesaw.columns.Column
+import java.time.LocalDateTime
 
 class SupplierOrderbookLive implements Supplier<Table> {
 
@@ -38,7 +39,7 @@ class SupplierOrderbookLive implements Supplier<Table> {
 
 	def parseOrderbook(OrderBook orderbook) {
 		val datetimeColumn = new DateTimeColumn("datetime")
-		datetimeColumn.append(System.currentTimeMillis())
+		datetimeColumn.append(LocalDateTime.now())
 		val bidColumns = (0 ..< take).toList().parallelStream().flatMap[Stream.of(new DoubleColumn("bid_price_" + it, 1), new DoubleColumn("bid_amount_" + it, 1))].collect()
 		val askColumns = (0 ..< take).toList().parallelStream().flatMap[Stream.of(new DoubleColumn("ask_price_" + it, 1), new DoubleColumn("ask_amount_" + it, 1))].collect()
 		val columns = new ArrayList<Column>()
