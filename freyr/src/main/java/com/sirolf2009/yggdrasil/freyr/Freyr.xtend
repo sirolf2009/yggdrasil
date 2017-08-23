@@ -3,6 +3,8 @@ package com.sirolf2009.yggdrasil.freyr
 import com.beust.jcommander.JCommander
 import java.time.Duration
 import java.util.List
+import java.util.Optional
+import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
 import java.util.stream.Stream
 import org.apache.logging.log4j.LogManager
@@ -12,10 +14,10 @@ import org.influxdb.dto.BatchPoints
 import org.influxdb.dto.Point
 import org.knowm.xchange.ExchangeFactory
 import org.knowm.xchange.currency.CurrencyPair
+import org.knowm.xchange.dto.Order.OrderType
 import org.knowm.xchange.dto.marketdata.OrderBook
 import org.knowm.xchange.dto.trade.LimitOrder
 import org.knowm.xchange.gdax.GDAXExchange
-import java.util.concurrent.TimeUnit
 
 class Freyr {
 
@@ -27,12 +29,24 @@ class Freyr {
 		log.info("Starting with arguments: " + arguments)
 
 		val exchange = ExchangeFactory.INSTANCE.createExchange(GDAXExchange.getCanonicalName())
+		val marketData = exchange.marketDataService
 		val influx = InfluxDBFactory.connect("http://" + influxHost + ":" + influxPort)
 		influx.createDatabase(database)
+		var Optional<Long> lastID = Optional.empty()
 		while(true) {
 			try {
-				val orderbook = exchange.marketDataService.getOrderBook(CurrencyPair.BTC_EUR)
-				influx.write(orderbook.parseOrderbook(database))
+				val trades = marketData.getTrades(CurrencyPair.BTC_EUR)
+				lastID.ifPresent[
+					val orderbook = marketData.getOrderBook(CurrencyPair.BTC_EUR)
+					val time = System.currentTimeMillis()
+					val newTrades = trades.trades.filter[trade| Long.parseLong(trade.id) > it].toList()
+					val bought = newTrades.stream().filter[type.equals(OrderType.BID)].map[tradableAmount].reduce[a,b|a.add(b)].map[doubleValue].orElse(0d)
+					val sold = newTrades.stream().filter[type.equals(OrderType.ASK)].map[tradableAmount].reduce[a,b|a.add(b)].map[doubleValue].orElse(0d)
+					val batch = orderbook.parseOrderbook(time, database)
+					batch.point(Point.measurement("gdax").time(time, TimeUnit.MILLISECONDS).addField("bought", bought).addField("sold", sold).build())
+					influx.write(batch)
+				]
+				lastID = Optional.of(trades.getlastID)
 				Thread.sleep(Duration.ofSeconds(1).toMillis())
 			} catch(Exception e) {
 				log.error("Failed to retrieve orderbook from " + exchange, e)
@@ -40,8 +54,7 @@ class Freyr {
 		}
 	}
 
-	def static parseOrderbook(OrderBook orderbook, String database) {
-		val time = System.currentTimeMillis()
+	def static parseOrderbook(OrderBook orderbook, long time, String database) {
 		val points = BatchPoints.database(database).consistency(ConsistencyLevel.ALL).build()
 		orderbook.bids.parseBid(time).forEach[points.point(it)]
 		orderbook.asks.parseAsk(time).forEach[points.point(it)]

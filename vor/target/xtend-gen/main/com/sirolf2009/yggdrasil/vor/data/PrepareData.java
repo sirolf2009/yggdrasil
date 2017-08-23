@@ -84,63 +84,75 @@ public class PrepareData {
     PrepareData.clean(this.labelsDirTrain);
     PrepareData.clean(this.featuresDirTest);
     PrepareData.clean(this.labelsDirTest);
-    final Consumer<Integer> _function = (Integer it) -> {
-      try {
-        StringConcatenation _builder = new StringConcatenation();
-        String _absolutePath = this.featuresDirTrain.getAbsolutePath();
-        _builder.append(_absolutePath);
-        _builder.append("/train_");
-        _builder.append(it);
-        _builder.append(".csv");
-        final Path featuresPath = Paths.get(_builder.toString());
-        StringConcatenation _builder_1 = new StringConcatenation();
-        String _absolutePath_1 = this.labelsDirTrain.getAbsolutePath();
-        _builder_1.append(_absolutePath_1);
-        _builder_1.append("/train_");
-        _builder_1.append(it);
-        _builder_1.append(".csv");
-        final Path labelsPath = Paths.get(_builder_1.toString());
-        final Consumer<Integer> _function_1 = (Integer step) -> {
-          try {
-            Files.write(featuresPath, this.data.get(((it).intValue() + (step).intValue())).concat("\n").getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
-          } catch (Throwable _e) {
-            throw Exceptions.sneakyThrow(_e);
-          }
-        };
-        new IntegerRange(0, this.numberOfTimesteps).forEach(_function_1);
-        Files.write(labelsPath, this.data.get(((it).intValue() + this.numberOfTimesteps)).concat("\n").getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
-      } catch (Throwable _e) {
-        throw Exceptions.sneakyThrow(_e);
+    final Consumer<Integer> _function = new Consumer<Integer>() {
+      @Override
+      public void accept(final Integer it) {
+        try {
+          StringConcatenation _builder = new StringConcatenation();
+          String _absolutePath = PrepareData.this.featuresDirTrain.getAbsolutePath();
+          _builder.append(_absolutePath);
+          _builder.append("/train_");
+          _builder.append(it);
+          _builder.append(".csv");
+          final Path featuresPath = Paths.get(_builder.toString());
+          StringConcatenation _builder_1 = new StringConcatenation();
+          String _absolutePath_1 = PrepareData.this.labelsDirTrain.getAbsolutePath();
+          _builder_1.append(_absolutePath_1);
+          _builder_1.append("/train_");
+          _builder_1.append(it);
+          _builder_1.append(".csv");
+          final Path labelsPath = Paths.get(_builder_1.toString());
+          final Consumer<Integer> _function = new Consumer<Integer>() {
+            @Override
+            public void accept(final Integer step) {
+              try {
+                Files.write(featuresPath, PrepareData.this.data.get(((it).intValue() + (step).intValue())).concat("\n").getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+              } catch (Throwable _e) {
+                throw Exceptions.sneakyThrow(_e);
+              }
+            }
+          };
+          new IntegerRange(0, PrepareData.this.numberOfTimesteps).forEach(_function);
+          Files.write(labelsPath, PrepareData.this.data.get(((it).intValue() + PrepareData.this.numberOfTimesteps)).concat("\n").getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+        } catch (Throwable _e) {
+          throw Exceptions.sneakyThrow(_e);
+        }
       }
     };
     IterableExtensions.<Integer>toList(new IntegerRange(0, this.trainSize)).parallelStream().forEach(_function);
-    final Consumer<Integer> _function_1 = (Integer it) -> {
-      try {
-        StringConcatenation _builder = new StringConcatenation();
-        String _absolutePath = this.featuresDirTest.getAbsolutePath();
-        _builder.append(_absolutePath);
-        _builder.append("/test_");
-        _builder.append(it);
-        _builder.append(".csv");
-        final Path featuresPath = Paths.get(_builder.toString());
-        StringConcatenation _builder_1 = new StringConcatenation();
-        String _absolutePath_1 = this.labelsDirTest.getAbsolutePath();
-        _builder_1.append(_absolutePath_1);
-        _builder_1.append("/test_");
-        _builder_1.append(it);
-        _builder_1.append(".csv");
-        final Path labelsPath = Paths.get(_builder_1.toString());
-        final Consumer<Integer> _function_2 = (Integer step) -> {
-          try {
-            Files.write(featuresPath, this.data.get(((it).intValue() + (step).intValue())).concat("\n").getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
-          } catch (Throwable _e) {
-            throw Exceptions.sneakyThrow(_e);
-          }
-        };
-        new IntegerRange(0, this.numberOfTimesteps).forEach(_function_2);
-        Files.write(labelsPath, this.data.get(((it).intValue() + this.numberOfTimesteps)).concat("\n").getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
-      } catch (Throwable _e) {
-        throw Exceptions.sneakyThrow(_e);
+    final Consumer<Integer> _function_1 = new Consumer<Integer>() {
+      @Override
+      public void accept(final Integer it) {
+        try {
+          StringConcatenation _builder = new StringConcatenation();
+          String _absolutePath = PrepareData.this.featuresDirTest.getAbsolutePath();
+          _builder.append(_absolutePath);
+          _builder.append("/test_");
+          _builder.append(it);
+          _builder.append(".csv");
+          final Path featuresPath = Paths.get(_builder.toString());
+          StringConcatenation _builder_1 = new StringConcatenation();
+          String _absolutePath_1 = PrepareData.this.labelsDirTest.getAbsolutePath();
+          _builder_1.append(_absolutePath_1);
+          _builder_1.append("/test_");
+          _builder_1.append(it);
+          _builder_1.append(".csv");
+          final Path labelsPath = Paths.get(_builder_1.toString());
+          final Consumer<Integer> _function = new Consumer<Integer>() {
+            @Override
+            public void accept(final Integer step) {
+              try {
+                Files.write(featuresPath, PrepareData.this.data.get(((it).intValue() + (step).intValue())).concat("\n").getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+              } catch (Throwable _e) {
+                throw Exceptions.sneakyThrow(_e);
+              }
+            }
+          };
+          new IntegerRange(0, PrepareData.this.numberOfTimesteps).forEach(_function);
+          Files.write(labelsPath, PrepareData.this.data.get(((it).intValue() + PrepareData.this.numberOfTimesteps)).concat("\n").getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+        } catch (Throwable _e) {
+          throw Exceptions.sneakyThrow(_e);
+        }
       }
     };
     IterableExtensions.<Integer>toList(new IntegerRange(this.trainSize, (this.numberOfTimesteps + this.trainSize))).parallelStream().forEach(_function_1);
@@ -155,22 +167,34 @@ public class PrepareData {
       PrepareData.log.info("Preparing test data");
       int _size = orders.size();
       int _minus = (_size - numberOfTimesteps);
-      final Function<Integer, Stream<INDArray>> _function = (Integer it) -> {
-        final Function<Integer, INDArray> _function_1 = (Integer step) -> {
-          INDArray _xblockexpression_1 = null;
-          {
-            final String[] data = orders.get(((it).intValue() + (step).intValue())).split(",");
-            final Function<String, Double> _function_2 = (String it_1) -> {
-              return Double.valueOf(Double.parseDouble(it_1));
-            };
-            _xblockexpression_1 = Nd4j.create(((double[])Conversions.unwrapArray(((List<String>)Conversions.doWrapArray(data)).stream().<Double>map(_function_2).collect(Collectors.<Double>toList()), double.class)));
-          }
-          return _xblockexpression_1;
-        };
-        return IterableExtensions.<Integer>toList(new IntegerRange(0, numberOfTimesteps)).stream().<INDArray>map(_function_1);
+      final Function<Integer, Stream<INDArray>> _function = new Function<Integer, Stream<INDArray>>() {
+        @Override
+        public Stream<INDArray> apply(final Integer it) {
+          final Function<Integer, INDArray> _function = new Function<Integer, INDArray>() {
+            @Override
+            public INDArray apply(final Integer step) {
+              INDArray _xblockexpression = null;
+              {
+                final String[] data = orders.get(((it).intValue() + (step).intValue())).split(",");
+                final Function<String, Double> _function = new Function<String, Double>() {
+                  @Override
+                  public Double apply(final String it) {
+                    return Double.valueOf(Double.parseDouble(it));
+                  }
+                };
+                _xblockexpression = Nd4j.create(((double[])Conversions.unwrapArray(((List<String>)Conversions.doWrapArray(data)).stream().<Double>map(_function).collect(Collectors.<Double>toList()), double.class)));
+              }
+              return _xblockexpression;
+            }
+          };
+          return IterableExtensions.<Integer>toList(new IntegerRange(0, numberOfTimesteps)).stream().<INDArray>map(_function);
+        }
       };
-      final BinaryOperator<INDArray> _function_1 = (INDArray a, INDArray b) -> {
-        return Nd4j.vstack(a, b);
+      final BinaryOperator<INDArray> _function_1 = new BinaryOperator<INDArray>() {
+        @Override
+        public INDArray apply(final INDArray a, final INDArray b) {
+          return Nd4j.vstack(a, b);
+        }
       };
       _xblockexpression = IterableExtensions.<Integer>toList(new ExclusiveRange(0, _minus, true)).parallelStream().<INDArray>flatMap(_function).reduce(_function_1).get();
     }
@@ -183,21 +207,30 @@ public class PrepareData {
       PrepareData.log.info("Preparing test data2");
       int _size = orders.size();
       int _minus = (_size - numberOfTimesteps);
-      final Function<Integer, INDArray> _function = (Integer it) -> {
-        final Function<Integer, double[]> _function_1 = (Integer step) -> {
-          double[] _xblockexpression_1 = null;
-          {
-            final String[] data = orders.get(((it).intValue() + (step).intValue())).split(",");
-            final Function<String, Double> _function_2 = (String it_1) -> {
-              return Double.valueOf(Double.parseDouble(it_1));
-            };
-            List<Double> _collect = ((List<String>)Conversions.doWrapArray(data)).stream().<Double>map(_function_2).collect(Collectors.<Double>toList());
-            _xblockexpression_1 = ((double[]) ((double[])Conversions.unwrapArray(_collect, double.class)));
-          }
-          return _xblockexpression_1;
-        };
-        List<double[]> _collect = IterableExtensions.<Integer>toList(new IntegerRange(0, numberOfTimesteps)).stream().<double[]>map(_function_1).collect(Collectors.<double[]>toList());
-        return Nd4j.create(((double[][]) ((double[][])Conversions.unwrapArray(_collect, double[].class))), 'c');
+      final Function<Integer, INDArray> _function = new Function<Integer, INDArray>() {
+        @Override
+        public INDArray apply(final Integer it) {
+          final Function<Integer, double[]> _function = new Function<Integer, double[]>() {
+            @Override
+            public double[] apply(final Integer step) {
+              double[] _xblockexpression = null;
+              {
+                final String[] data = orders.get(((it).intValue() + (step).intValue())).split(",");
+                final Function<String, Double> _function = new Function<String, Double>() {
+                  @Override
+                  public Double apply(final String it) {
+                    return Double.valueOf(Double.parseDouble(it));
+                  }
+                };
+                List<Double> _collect = ((List<String>)Conversions.doWrapArray(data)).stream().<Double>map(_function).collect(Collectors.<Double>toList());
+                _xblockexpression = ((double[]) ((double[])Conversions.unwrapArray(_collect, double.class)));
+              }
+              return _xblockexpression;
+            }
+          };
+          List<double[]> _collect = IterableExtensions.<Integer>toList(new IntegerRange(0, numberOfTimesteps)).stream().<double[]>map(_function).collect(Collectors.<double[]>toList());
+          return Nd4j.create(((double[][]) ((double[][])Conversions.unwrapArray(_collect, double[].class))), 'c');
+        }
       };
       _xblockexpression = IterableExtensions.<Integer>toList(new ExclusiveRange(0, _minus, true)).parallelStream().<INDArray>map(_function).collect(Collectors.<INDArray>toList());
     }
@@ -207,20 +240,29 @@ public class PrepareData {
   /**
    * orders, ahead -> dataset
    */
-  public final static Function<Pair<List<List<Double>>, Integer>, List<INDArray>> createDataSet = ((Function<Pair<List<List<Double>>, Integer>, List<INDArray>>) (Pair<List<List<Double>>, Integer> it) -> {
-    int _size = it.getLeft().size();
-    Integer _right = it.getRight();
-    int _minus = (_size - (_right).intValue());
-    final Function<Integer, INDArray> _function = (Integer example) -> {
-      Integer _right_1 = it.getRight();
-      final Function<Integer, List<Double>> _function_1 = (Integer step) -> {
-        return it.getLeft().get(((example).intValue() + (step).intValue()));
+  public final static Function<Pair<List<List<Double>>, Integer>, List<INDArray>> createDataSet = new Function<Pair<List<List<Double>>, Integer>, List<INDArray>>() {
+    @Override
+    public List<INDArray> apply(final Pair<List<List<Double>>, Integer> it) {
+      int _size = it.getLeft().size();
+      Integer _right = it.getRight();
+      int _minus = (_size - (_right).intValue());
+      final Function<Integer, INDArray> _function = new Function<Integer, INDArray>() {
+        @Override
+        public INDArray apply(final Integer example) {
+          Integer _right = it.getRight();
+          final Function<Integer, List<Double>> _function = new Function<Integer, List<Double>>() {
+            @Override
+            public List<Double> apply(final Integer step) {
+              return it.getLeft().get(((example).intValue() + (step).intValue()));
+            }
+          };
+          List<List<Double>> _collect = IterableExtensions.<Integer>toList(new IntegerRange(0, (_right).intValue())).stream().<List<Double>>map(_function).collect(Collectors.<List<Double>>toList());
+          return Nd4j.create(((double[][]) ((double[][])Conversions.unwrapArray(_collect, double[].class))), 'c');
+        }
       };
-      List<List<Double>> _collect = IterableExtensions.<Integer>toList(new IntegerRange(0, (_right_1).intValue())).stream().<List<Double>>map(_function_1).collect(Collectors.<List<Double>>toList());
-      return Nd4j.create(((double[][]) ((double[][])Conversions.unwrapArray(_collect, double[].class))), 'c');
-    };
-    return IterableExtensions.<Integer>toList(new ExclusiveRange(0, _minus, true)).parallelStream().<INDArray>map(_function).collect(Collectors.<INDArray>toList());
-  });
+      return IterableExtensions.<Integer>toList(new ExclusiveRange(0, _minus, true)).parallelStream().<INDArray>map(_function).collect(Collectors.<INDArray>toList());
+    }
+  };
   
   public static List<INDArray> createData(final List<List<Writable>> orders, final int numberOfTimesteps) throws Exception {
     List<INDArray> _xblockexpression = null;
@@ -228,14 +270,23 @@ public class PrepareData {
       PrepareData.log.info("Preparing test data");
       int _size = orders.size();
       int _minus = (_size - numberOfTimesteps);
-      final Function<Integer, Stream<INDArray>> _function = (Integer it) -> {
-        final Function<Integer, INDArray> _function_1 = (Integer step) -> {
-          final Function<Writable, Double> _function_2 = (Writable it_1) -> {
-            return Double.valueOf(it_1.toDouble());
+      final Function<Integer, Stream<INDArray>> _function = new Function<Integer, Stream<INDArray>>() {
+        @Override
+        public Stream<INDArray> apply(final Integer it) {
+          final Function<Integer, INDArray> _function = new Function<Integer, INDArray>() {
+            @Override
+            public INDArray apply(final Integer step) {
+              final Function<Writable, Double> _function = new Function<Writable, Double>() {
+                @Override
+                public Double apply(final Writable it) {
+                  return Double.valueOf(it.toDouble());
+                }
+              };
+              return Nd4j.create(((double[])Conversions.unwrapArray(orders.get(((it).intValue() + (step).intValue())).stream().<Double>map(_function).collect(Collectors.<Double>toList()), double.class)));
+            }
           };
-          return Nd4j.create(((double[])Conversions.unwrapArray(orders.get(((it).intValue() + (step).intValue())).stream().<Double>map(_function_2).collect(Collectors.<Double>toList()), double.class)));
-        };
-        return IterableExtensions.<Integer>toList(new IntegerRange(0, numberOfTimesteps)).stream().<INDArray>map(_function_1);
+          return IterableExtensions.<Integer>toList(new IntegerRange(0, numberOfTimesteps)).stream().<INDArray>map(_function);
+        }
       };
       _xblockexpression = IterableExtensions.<Integer>toList(new ExclusiveRange(0, _minus, true)).parallelStream().<INDArray>flatMap(_function).collect(Collectors.<INDArray>toList());
     }
@@ -248,17 +299,29 @@ public class PrepareData {
       PrepareData.log.info("Preparing test data");
       int _size = orders.size();
       int _minus = (_size - numberOfTimesteps);
-      final Function<Integer, INDArray> _function = (Integer it) -> {
-        final Function1<Integer, INDArray> _function_1 = (Integer step) -> {
-          final Function<Writable, Double> _function_2 = (Writable it_1) -> {
-            return Double.valueOf(it_1.toDouble());
+      final Function<Integer, INDArray> _function = new Function<Integer, INDArray>() {
+        @Override
+        public INDArray apply(final Integer it) {
+          final Function1<Integer, INDArray> _function = new Function1<Integer, INDArray>() {
+            @Override
+            public INDArray apply(final Integer step) {
+              final Function<Writable, Double> _function = new Function<Writable, Double>() {
+                @Override
+                public Double apply(final Writable it) {
+                  return Double.valueOf(it.toDouble());
+                }
+              };
+              return Nd4j.create(((double[])Conversions.unwrapArray(orders.get(((it).intValue() + (step).intValue())).stream().<Double>map(_function).collect(Collectors.<Double>toList()), double.class)));
+            }
           };
-          return Nd4j.create(((double[])Conversions.unwrapArray(orders.get(((it).intValue() + (step).intValue())).stream().<Double>map(_function_2).collect(Collectors.<Double>toList()), double.class)));
-        };
-        final Function2<INDArray, INDArray, INDArray> _function_2 = (INDArray a, INDArray b) -> {
-          return Nd4j.vstack(a, b);
-        };
-        return IterableExtensions.<INDArray>reduce(IterableExtensions.<Integer, INDArray>map(new IntegerRange(0, numberOfTimesteps), _function_1), _function_2).get();
+          final Function2<INDArray, INDArray, INDArray> _function_1 = new Function2<INDArray, INDArray, INDArray>() {
+            @Override
+            public INDArray apply(final INDArray a, final INDArray b) {
+              return Nd4j.vstack(a, b);
+            }
+          };
+          return IterableExtensions.<INDArray>reduce(IterableExtensions.<Integer, INDArray>map(new IntegerRange(0, numberOfTimesteps), _function), _function_1).get();
+        }
       };
       _xblockexpression = IterableExtensions.<Integer>toList(new ExclusiveRange(0, _minus, true)).parallelStream().<INDArray>map(_function).collect(Collectors.<INDArray>toList());
     }
@@ -271,17 +334,29 @@ public class PrepareData {
       PrepareData.log.info("Preparing test data");
       int _size = orders.size();
       int _minus = (_size - numberOfTimesteps);
-      final Function<Integer, Stream<INDArray>> _function = (Integer it) -> {
-        final Function<Integer, INDArray> _function_1 = (Integer step) -> {
-          final Function<Writable, Double> _function_2 = (Writable it_1) -> {
-            return Double.valueOf(it_1.toDouble());
+      final Function<Integer, Stream<INDArray>> _function = new Function<Integer, Stream<INDArray>>() {
+        @Override
+        public Stream<INDArray> apply(final Integer it) {
+          final Function<Integer, INDArray> _function = new Function<Integer, INDArray>() {
+            @Override
+            public INDArray apply(final Integer step) {
+              final Function<Writable, Double> _function = new Function<Writable, Double>() {
+                @Override
+                public Double apply(final Writable it) {
+                  return Double.valueOf(it.toDouble());
+                }
+              };
+              return Nd4j.create(((double[])Conversions.unwrapArray(orders.get(((it).intValue() + (step).intValue())).stream().<Double>map(_function).collect(Collectors.<Double>toList()), double.class)));
+            }
           };
-          return Nd4j.create(((double[])Conversions.unwrapArray(orders.get(((it).intValue() + (step).intValue())).stream().<Double>map(_function_2).collect(Collectors.<Double>toList()), double.class)));
-        };
-        return IterableExtensions.<Integer>toList(new IntegerRange(0, numberOfTimesteps)).stream().<INDArray>map(_function_1);
+          return IterableExtensions.<Integer>toList(new IntegerRange(0, numberOfTimesteps)).stream().<INDArray>map(_function);
+        }
       };
-      final BinaryOperator<INDArray> _function_1 = (INDArray a, INDArray b) -> {
-        return Nd4j.vstack(a, b);
+      final BinaryOperator<INDArray> _function_1 = new BinaryOperator<INDArray>() {
+        @Override
+        public INDArray apply(final INDArray a, final INDArray b) {
+          return Nd4j.vstack(a, b);
+        }
       };
       _xblockexpression = IterableExtensions.<Integer>toList(new ExclusiveRange(0, _minus, true)).parallelStream().<INDArray>flatMap(_function).reduce(_function_1).get();
     }
@@ -291,12 +366,18 @@ public class PrepareData {
   public static INDArray createIndArrayFromStringList(final List<String> rawString, final int numOfVariables, final int start, final int length) {
     final List<String> stringList = rawString.subList(start, (start + length));
     final double[][] primitives = new double[numOfVariables][stringList.size()];
-    final Procedure2<String, Integer> _function = (String it, Integer i) -> {
-      final String[] vals = it.split(",");
-      final Procedure2<String, Integer> _function_1 = (String it_1, Integer j) -> {
-        primitives[(j).intValue()][(i).intValue()] = (Double.valueOf(vals[(j).intValue()])).doubleValue();
-      };
-      IterableExtensions.<String>forEach(((Iterable<String>)Conversions.doWrapArray(vals)), _function_1);
+    final Procedure2<String, Integer> _function = new Procedure2<String, Integer>() {
+      @Override
+      public void apply(final String it, final Integer i) {
+        final String[] vals = it.split(",");
+        final Procedure2<String, Integer> _function = new Procedure2<String, Integer>() {
+          @Override
+          public void apply(final String it, final Integer j) {
+            primitives[(j).intValue()][(i).intValue()] = (Double.valueOf(vals[(j).intValue()])).doubleValue();
+          }
+        };
+        IterableExtensions.<String>forEach(((Iterable<String>)Conversions.doWrapArray(vals)), _function);
+      }
     };
     IterableExtensions.<String>forEach(stringList, _function);
     return Nd4j.create(new int[] { 1, length }, primitives);
