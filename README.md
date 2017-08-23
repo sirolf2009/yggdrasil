@@ -7,7 +7,7 @@ This project is still very young and everything is subject to change (a database
 ## Freyr - God of fertility - Data Collector
 Collects data and throws it into an InfluxDB database
 
-## Vor - Godess of wistdom - Machine Learning
+## Vör - Godess of wistdom - Machine Learning
 Collects Freyrs data and applies machine learning on it using Deeplearning4J
 Preferably clusterable
 
@@ -19,3 +19,6 @@ An application/library to browse and chart data. Inspired by tableau
 
 ## Sif - Godess of harvest - Data Retrieval/Manipulation
 Defines ways of getting data for other modules
+
+## Vár - Godess of contract - Live trading
+Combines other modules to act as a trading robot. Will probably only support GDAX and Bitfinex

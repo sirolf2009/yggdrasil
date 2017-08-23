@@ -11,5 +11,7 @@ class OrderPoint {
 	val int index
 	val double value
 	val double amount
+	val double bought
+	val double sold
 	
 }

@@ -40,5 +40,10 @@
 			<groupId>tech.tablesaw</groupId>
 			<artifactId>tablesaw-core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.sirolf2009.yggdrasil</groupId>
+			<artifactId>freyr</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>

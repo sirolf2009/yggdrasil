@@ -25,7 +25,7 @@ class OrderPoints {
 		val amountMean = amountStats.mean
 		val amountStdDev = amountStats.standardDeviation
 		parallelStream().map [
-			new OrderPoint(timestamp, side, index, (value - halfPrice) / ((value + halfPrice) / 2), (amount - amountMean) * amountStdDev)
+			new OrderPoint(timestamp, side, index, (value - halfPrice) / ((value + halfPrice) / 2), (amount - amountMean) * amountStdDev, bought, sold)
 		].collect()
 	]
 	

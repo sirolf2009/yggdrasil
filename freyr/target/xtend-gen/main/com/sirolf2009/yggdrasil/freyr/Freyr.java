@@ -57,77 +57,46 @@ public class Freyr {
     while (true) {
       try {
         final Trades trades = marketData.getTrades(CurrencyPair.BTC_EUR);
-        final Consumer<Long> _function = new Consumer<Long>() {
-          @Override
-          public void accept(final Long it) {
-            try {
-              final OrderBook orderbook = marketData.getOrderBook(CurrencyPair.BTC_EUR);
-              final long time = System.currentTimeMillis();
-              final Function1<Trade, Boolean> _function = new Function1<Trade, Boolean>() {
-                @Override
-                public Boolean apply(final Trade trade) {
-                  long _parseLong = Long.parseLong(trade.getId());
-                  return Boolean.valueOf((_parseLong > (it).longValue()));
-                }
-              };
-              final List<Trade> newTrades = IterableExtensions.<Trade>toList(IterableExtensions.<Trade>filter(trades.getTrades(), _function));
-              final Predicate<Trade> _function_1 = new Predicate<Trade>() {
-                @Override
-                public boolean test(final Trade it) {
-                  return it.getType().equals(Order.OrderType.BID);
-                }
-              };
-              final Function<Trade, BigDecimal> _function_2 = new Function<Trade, BigDecimal>() {
-                @Override
-                public BigDecimal apply(final Trade it) {
-                  return it.getTradableAmount();
-                }
-              };
-              final BinaryOperator<BigDecimal> _function_3 = new BinaryOperator<BigDecimal>() {
-                @Override
-                public BigDecimal apply(final BigDecimal a, final BigDecimal b) {
-                  return a.add(b);
-                }
-              };
-              final Function<BigDecimal, Double> _function_4 = new Function<BigDecimal, Double>() {
-                @Override
-                public Double apply(final BigDecimal it) {
-                  return Double.valueOf(it.doubleValue());
-                }
-              };
-              final Double bought = newTrades.stream().filter(_function_1).<BigDecimal>map(_function_2).reduce(_function_3).<Double>map(_function_4).orElse(Double.valueOf(0d));
-              final Predicate<Trade> _function_5 = new Predicate<Trade>() {
-                @Override
-                public boolean test(final Trade it) {
-                  return it.getType().equals(Order.OrderType.ASK);
-                }
-              };
-              final Function<Trade, BigDecimal> _function_6 = new Function<Trade, BigDecimal>() {
-                @Override
-                public BigDecimal apply(final Trade it) {
-                  return it.getTradableAmount();
-                }
-              };
-              final BinaryOperator<BigDecimal> _function_7 = new BinaryOperator<BigDecimal>() {
-                @Override
-                public BigDecimal apply(final BigDecimal a, final BigDecimal b) {
-                  return a.add(b);
-                }
-              };
-              final Function<BigDecimal, Double> _function_8 = new Function<BigDecimal, Double>() {
-                @Override
-                public Double apply(final BigDecimal it) {
-                  return Double.valueOf(it.doubleValue());
-                }
-              };
-              final Double sold = newTrades.stream().filter(_function_5).<BigDecimal>map(_function_6).reduce(_function_7).<Double>map(_function_8).orElse(Double.valueOf(0d));
-              final BatchPoints batch = Freyr.parseOrderbook(orderbook, time, arguments.getDatabase());
-              batch.point(Point.measurement("gdax").time(time, TimeUnit.MILLISECONDS).addField("bought", bought).addField("sold", sold).build());
-              influx.write(batch);
-              Freyr.log.info(batch);
-            } catch (Throwable _e) {
-              throw Exceptions.sneakyThrow(_e);
-            }
+        final Consumer<Long> _function = (Long it) -> {
+          try {
+            final OrderBook orderbook = marketData.getOrderBook(CurrencyPair.BTC_EUR);
+            final long time = System.currentTimeMillis();
+            final Function1<Trade, Boolean> _function_1 = (Trade trade) -> {
+              long _parseLong = Long.parseLong(trade.getId());
+              return Boolean.valueOf((_parseLong > (it).longValue()));
+            };
+            final List<Trade> newTrades = IterableExtensions.<Trade>toList(IterableExtensions.<Trade>filter(trades.getTrades(), _function_1));
+            final Predicate<Trade> _function_2 = (Trade it_1) -> {
+              return it_1.getType().equals(Order.OrderType.BID);
+            };
+            final Function<Trade, BigDecimal> _function_3 = (Trade it_1) -> {
+              return it_1.getTradableAmount();
+            };
+            final BinaryOperator<BigDecimal> _function_4 = (BigDecimal a, BigDecimal b) -> {
+              return a.add(b);
+            };
+            final Function<BigDecimal, Double> _function_5 = (BigDecimal it_1) -> {
+              return Double.valueOf(it_1.doubleValue());
+            };
+            final Double bought = newTrades.stream().filter(_function_2).<BigDecimal>map(_function_3).reduce(_function_4).<Double>map(_function_5).orElse(Double.valueOf(0d));
+            final Predicate<Trade> _function_6 = (Trade it_1) -> {
+              return it_1.getType().equals(Order.OrderType.ASK);
+            };
+            final Function<Trade, BigDecimal> _function_7 = (Trade it_1) -> {
+              return it_1.getTradableAmount();
+            };
+            final BinaryOperator<BigDecimal> _function_8 = (BigDecimal a, BigDecimal b) -> {
+              return a.add(b);
+            };
+            final Function<BigDecimal, Double> _function_9 = (BigDecimal it_1) -> {
+              return Double.valueOf(it_1.doubleValue());
+            };
+            final Double sold = newTrades.stream().filter(_function_6).<BigDecimal>map(_function_7).reduce(_function_8).<Double>map(_function_9).orElse(Double.valueOf(0d));
+            final BatchPoints batch = Freyr.parseOrderbook(orderbook, time, (bought).doubleValue(), (sold).doubleValue(), arguments.getDatabase());
+            influx.write(batch);
+            Freyr.log.info(batch);
+          } catch (Throwable _e) {
+            throw Exceptions.sneakyThrow(_e);
           }
         };
         lastID.ifPresent(_function);
@@ -144,55 +113,40 @@ public class Freyr {
     }
   }
   
-  public static BatchPoints parseOrderbook(final OrderBook orderbook, final long time, final String database) {
+  public static BatchPoints parseOrderbook(final OrderBook orderbook, final long time, final double bought, final double sold, final String database) {
     final BatchPoints points = BatchPoints.database(database).consistency(InfluxDB.ConsistencyLevel.ALL).build();
-    final Consumer<Point> _function = new Consumer<Point>() {
-      @Override
-      public void accept(final Point it) {
-        points.point(it);
-      }
+    final Consumer<Point> _function = (Point it) -> {
+      points.point(it);
     };
-    Freyr.parseBid(orderbook.getBids(), time).forEach(_function);
-    final Consumer<Point> _function_1 = new Consumer<Point>() {
-      @Override
-      public void accept(final Point it) {
-        points.point(it);
-      }
+    Freyr.parseBid(orderbook.getBids(), time, bought, sold).forEach(_function);
+    final Consumer<Point> _function_1 = (Point it) -> {
+      points.point(it);
     };
-    Freyr.parseAsk(orderbook.getAsks(), time).forEach(_function_1);
+    Freyr.parseAsk(orderbook.getAsks(), time, bought, sold).forEach(_function_1);
     return points;
   }
   
-  public static List<Point> parseBid(final List<LimitOrder> bids, final long time) {
-    final Comparator<LimitOrder> _function = new Comparator<LimitOrder>() {
-      @Override
-      public int compare(final LimitOrder a, final LimitOrder b) {
-        return b.getLimitPrice().compareTo(a.getLimitPrice());
-      }
+  public static List<Point> parseBid(final List<LimitOrder> bids, final long time, final double bought, final double sold) {
+    final Comparator<LimitOrder> _function = (LimitOrder a, LimitOrder b) -> {
+      return b.getLimitPrice().compareTo(a.getLimitPrice());
     };
-    return Freyr.parse(Freyr.<LimitOrder>collect(bids.stream().sorted(_function)), "bid", time);
+    return Freyr.parse(Freyr.<LimitOrder>collect(bids.stream().sorted(_function)), "bid", time, bought, sold);
   }
   
-  public static List<Point> parseAsk(final List<LimitOrder> asks, final long time) {
-    final Comparator<LimitOrder> _function = new Comparator<LimitOrder>() {
-      @Override
-      public int compare(final LimitOrder a, final LimitOrder b) {
-        return a.getLimitPrice().compareTo(b.getLimitPrice());
-      }
+  public static List<Point> parseAsk(final List<LimitOrder> asks, final long time, final double bought, final double sold) {
+    final Comparator<LimitOrder> _function = (LimitOrder a, LimitOrder b) -> {
+      return a.getLimitPrice().compareTo(b.getLimitPrice());
     };
-    return Freyr.parse(Freyr.<LimitOrder>collect(asks.stream().sorted(_function)), "ask", time);
+    return Freyr.parse(Freyr.<LimitOrder>collect(asks.stream().sorted(_function)), "ask", time, bought, sold);
   }
   
-  public static List<Point> parse(final List<LimitOrder> orders, final String side, final long time) {
-    final Function<LimitOrder, Stream<Point>> _function = new Function<LimitOrder, Stream<Point>>() {
-      @Override
-      public Stream<Point> apply(final LimitOrder it) {
-        Point.Builder _time = Point.measurement("gdax").time(time, TimeUnit.MILLISECONDS);
-        int _indexOf = orders.indexOf(it);
-        String _plus = (Integer.valueOf(_indexOf) + "");
-        return Stream.<Point>of(
-          _time.tag("index", _plus).tag("side", side).addField("value", it.getLimitPrice().doubleValue()).addField("amount", it.getTradableAmount().doubleValue()).build());
-      }
+  public static List<Point> parse(final List<LimitOrder> orders, final String side, final long time, final double bought, final double sold) {
+    final Function<LimitOrder, Stream<Point>> _function = (LimitOrder it) -> {
+      Point.Builder _time = Point.measurement("gdax").time(time, TimeUnit.MILLISECONDS);
+      int _indexOf = orders.indexOf(it);
+      String _plus = (Integer.valueOf(_indexOf) + "");
+      return Stream.<Point>of(
+        _time.tag("index", _plus).tag("side", side).addField("value", it.getLimitPrice().doubleValue()).addField("amount", it.getTradableAmount().doubleValue()).addField("bought", bought).addField("sold", sold).build());
     };
     return Freyr.<Point>collect(orders.stream().limit(15).<Point>flatMap(_function));
   }

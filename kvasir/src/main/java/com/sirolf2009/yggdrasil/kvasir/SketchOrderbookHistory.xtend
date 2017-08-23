@@ -2,6 +2,7 @@ package com.sirolf2009.yggdrasil.kvasir
 
 import com.sirolf2009.yggdrasil.freyr.Arguments
 import com.sirolf2009.yggdrasil.freyr.SupplierOrderbookLive
+import com.sirolf2009.yggdrasil.freyr.model.TableOrderbook
 import controlP5.ControlP5
 import controlP5.ControlP5Constants
 import controlP5.Slider
@@ -9,6 +10,7 @@ import grafica.GPlot
 import grafica.GPoint
 import grafica.GPointsArray
 import java.time.Duration
+import java.util.Optional
 import java.util.function.Supplier
 import java.util.stream.Collectors
 import java.util.stream.IntStream
@@ -17,8 +19,6 @@ import org.knowm.xchange.currency.CurrencyPair
 import org.knowm.xchange.gdax.GDAXExchange
 import processing.core.PApplet
 import tech.tablesaw.api.DoubleColumn
-import tech.tablesaw.api.Table
-import com.sirolf2009.yggdrasil.sif.transmutation.OrderbookNormaliseDiffStdDev
 
 class SketchOrderbookHistory extends PApplet {
 
@@ -27,8 +27,8 @@ class SketchOrderbookHistory extends PApplet {
 		background = ControlP5Constants.WHITE
 		valueLabel = ControlP5Constants.FUCHSIA
 	]
-	val Supplier<Table> supplier
-	val Table data
+	val Supplier<Optional<TableOrderbook>> supplier
+	var TableOrderbook data
 	val int take
 	var GPlot orderbook
 	var ControlP5 cp5
@@ -37,19 +37,21 @@ class SketchOrderbookHistory extends PApplet {
 	var scroll = 0
 	var zoom = 60
 
-	new(Supplier<Table> supplier, int take) {
+	new(TableOrderbook data, Supplier<Optional<TableOrderbook>> supplier, int take) {
 		this.supplier = supplier
 		this.take = take
-		this.data = supplier.get()
+		this.data = data
 		new Thread [
 			while(true) {
 				val newData = supplier.get()
-				newData.appendData()
+				newData.ifPresent [
+					appendData()
+				]
 			}
 		].start()
 	}
-	
-	def synchronized appendData(Table data) {
+
+	def synchronized appendData(TableOrderbook data) {
 		this.data.append(data)
 	}
 
@@ -66,7 +68,7 @@ class SketchOrderbookHistory extends PApplet {
 
 		cp5 = new ControlP5(this)
 		sliderScroll = cp5.addSlider("scroll").setPosition(40, 750).setRange(0, Math.max(1, data.rowCount - 1 - zoom)).setWidth(950).setHeight(20).setColor(color).setLabelVisible(true)
-		sliderZoom = cp5.addSlider("zoom").setPosition(40, 770).setRange(1, 60*15).setWidth(950).setHeight(20).setColor(color).setValue(60).setLabelVisible(true)
+		sliderZoom = cp5.addSlider("zoom").setPosition(40, 770).setRange(1, 60 * 15).setWidth(950).setHeight(20).setColor(color).setValue(60).setLabelVisible(true)
 		frameRate(60)
 	}
 
@@ -94,8 +96,8 @@ class SketchOrderbookHistory extends PApplet {
 		]
 	}
 
-	def static create(Supplier<Table> data, int take) {
-		runSketch(#[SketchOrderbookHistory.name], new SketchOrderbookHistory(data, take));
+	def static create(TableOrderbook data, Supplier<Optional<TableOrderbook>> supplier, int take) {
+		runSketch(#[SketchOrderbookHistory.name], new SketchOrderbookHistory(data, supplier, take));
 	}
 
 	def synchronized void zoom(float zoom) {
@@ -105,13 +107,21 @@ class SketchOrderbookHistory extends PApplet {
 
 	def static void main(String[] args) {
 		val take = 15
-		val normalise = new OrderbookNormaliseDiffStdDev()
+//		val normalise = new OrderbookNormaliseDiffStdDev()
 		val raw = new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take)
-		create([
+		create(raw.first, [
 			val table = raw.get()
-			normalise.accept(table)
 			table
 		], take)
+	}
+	
+	def static getFirst(Supplier<Optional<TableOrderbook>> supplier) {
+		while(true) {
+			val data = supplier.get()
+			if(data.present) {
+				return data.get()
+			}
+		}
 	}
 
 }

@@ -42,8 +42,7 @@ class Freyr {
 					val newTrades = trades.trades.filter[trade| Long.parseLong(trade.id) > it].toList()
 					val bought = newTrades.stream().filter[type.equals(OrderType.BID)].map[tradableAmount].reduce[a,b|a.add(b)].map[doubleValue].orElse(0d)
 					val sold = newTrades.stream().filter[type.equals(OrderType.ASK)].map[tradableAmount].reduce[a,b|a.add(b)].map[doubleValue].orElse(0d)
-					val batch = orderbook.parseOrderbook(time, database)
-					batch.point(Point.measurement("gdax").time(time, TimeUnit.MILLISECONDS).addField("bought", bought).addField("sold", sold).build())
+					val batch = orderbook.parseOrderbook(time, bought, sold, database)
 					influx.write(batch)
 					log.info(batch)
 				]
@@ -55,25 +54,25 @@ class Freyr {
 		}
 	}
 
-	def static parseOrderbook(OrderBook orderbook, long time, String database) {
+	def static parseOrderbook(OrderBook orderbook, long time, double bought, double sold, String database) {
 		val points = BatchPoints.database(database).consistency(ConsistencyLevel.ALL).build()
-		orderbook.bids.parseBid(time).forEach[points.point(it)]
-		orderbook.asks.parseAsk(time).forEach[points.point(it)]
+		orderbook.bids.parseBid(time, bought, sold).forEach[points.point(it)]
+		orderbook.asks.parseAsk(time, bought, sold).forEach[points.point(it)]
 		return points
 	}
 
-	def static parseBid(List<LimitOrder> bids, long time) {
-		return bids.stream().sorted[a, b|b.limitPrice.compareTo(a.limitPrice)].collect().parse("bid", time)
+	def static parseBid(List<LimitOrder> bids, long time, double bought, double sold) {
+		return bids.stream().sorted[a, b|b.limitPrice.compareTo(a.limitPrice)].collect().parse("bid", time, bought, sold)
 	}
 
-	def static parseAsk(List<LimitOrder> asks, long time) {
-		return asks.stream().sorted[a, b|a.limitPrice.compareTo(b.limitPrice)].collect().parse("ask", time)
+	def static parseAsk(List<LimitOrder> asks, long time, double bought, double sold) {
+		return asks.stream().sorted[a, b|a.limitPrice.compareTo(b.limitPrice)].collect().parse("ask", time, bought, sold)
 	}
 
-	def static parse(List<LimitOrder> orders, String side, long time) {
+	def static parse(List<LimitOrder> orders, String side, long time, double bought, double sold) {
 		return orders.stream().limit(15).flatMap [
 			Stream.of(
-				Point.measurement("gdax").time(time, TimeUnit.MILLISECONDS).tag("index", orders.indexOf(it) + "").tag("side", side).addField("value", limitPrice.doubleValue()).addField("amount", tradableAmount.doubleValue()).build()
+				Point.measurement("gdax").time(time, TimeUnit.MILLISECONDS).tag("index", orders.indexOf(it) + "").tag("side", side).addField("value", limitPrice.doubleValue()).addField("amount", tradableAmount.doubleValue()).addField("bought", bought).addField("sold", sold).build()
 			)
 		].collect()
 	}

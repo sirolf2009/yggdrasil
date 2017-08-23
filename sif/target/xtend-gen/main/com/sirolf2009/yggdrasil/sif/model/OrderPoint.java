@@ -18,13 +18,19 @@ public class OrderPoint {
   
   private final double amount;
   
-  public OrderPoint(final Date timestamp, final String side, final int index, final double value, final double amount) {
+  private final double bought;
+  
+  private final double sold;
+  
+  public OrderPoint(final Date timestamp, final String side, final int index, final double value, final double amount, final double bought, final double sold) {
     super();
     this.timestamp = timestamp;
     this.side = side;
     this.index = index;
     this.value = value;
     this.amount = amount;
+    this.bought = bought;
+    this.sold = sold;
   }
   
   @Override
@@ -37,6 +43,8 @@ public class OrderPoint {
     result = prime * result + this.index;
     result = prime * result + (int) (Double.doubleToLongBits(this.value) ^ (Double.doubleToLongBits(this.value) >>> 32));
     result = prime * result + (int) (Double.doubleToLongBits(this.amount) ^ (Double.doubleToLongBits(this.amount) >>> 32));
+    result = prime * result + (int) (Double.doubleToLongBits(this.bought) ^ (Double.doubleToLongBits(this.bought) >>> 32));
+    result = prime * result + (int) (Double.doubleToLongBits(this.sold) ^ (Double.doubleToLongBits(this.sold) >>> 32));
     return result;
   }
   
@@ -66,6 +74,10 @@ public class OrderPoint {
       return false; 
     if (Double.doubleToLongBits(other.amount) != Double.doubleToLongBits(this.amount))
       return false; 
+    if (Double.doubleToLongBits(other.bought) != Double.doubleToLongBits(this.bought))
+      return false; 
+    if (Double.doubleToLongBits(other.sold) != Double.doubleToLongBits(this.sold))
+      return false; 
     return true;
   }
   
@@ -78,6 +90,8 @@ public class OrderPoint {
     b.add("index", this.index);
     b.add("value", this.value);
     b.add("amount", this.amount);
+    b.add("bought", this.bought);
+    b.add("sold", this.sold);
     return b.toString();
   }
   
@@ -104,5 +118,15 @@ public class OrderPoint {
   @Pure
   public double getAmount() {
     return this.amount;
+  }
+  
+  @Pure
+  public double getBought() {
+    return this.bought;
+  }
+  
+  @Pure
+  public double getSold() {
+    return this.sold;
   }
 }

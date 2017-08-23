@@ -30,10 +30,11 @@ class LoadersDatabase {
 
 	def static getDatapoints(String influx, int orderPoints) {
 		val database = InfluxDBFactory.connect(influx)
-		val batchesToDownload = Math.ceil(orderPoints / batch) as int
+		val batchesToDownload = Math.ceil(orderPoints as double / batch as double) as int
 		(0 ..< batchesToDownload).toList().stream().map [
-			log.info('''(«it»/«batchesToDownload») SELECT "value", "amount" FROM "orderbook"."autogen"."gdax" GROUP BY "side", "index" LIMIT «batch» OFFSET «it*batch»''')
-			database.query(new Query('''SELECT "value", "amount" FROM "orderbook"."autogen"."gdax" GROUP BY "side", "index" LIMIT «batch» OFFSET «it*batch»''', "orderbook"))
+			val query = '''SELECT "value", "amount", "bought", "sold" FROM "orderbook"."autogen"."gdax" GROUP BY "side", "index" LIMIT «batch» OFFSET «it*batch»'''
+			log.info('''(«it»/«batchesToDownload») «query»''')
+			database.query(new Query(query, "orderbook"))
 		].filter(hasData).reduce(combine).map(parseOrderbook)
 	}
 
@@ -43,7 +44,7 @@ class LoadersDatabase {
 		val batchesToDownload = Math.ceil(orderPoints / batch) as int
 		val policy = new RetryPolicy().retryOn(InfluxDBIOException).withBackoff(1, 10, TimeUnit.MINUTES).withMaxRetries(10)
 		(0 ..< batchesToDownload).toList().stream().map [
-			val query = '''SELECT "value", "amount" FROM "orderbook"."autogen"."gdax" GROUP BY "side", "index" LIMIT «batch» OFFSET «it*batch»'''
+			val query = '''SELECT "value", "amount", "bought", "sold" FROM "orderbook"."autogen"."gdax" GROUP BY "side", "index" LIMIT «batch» OFFSET «it*batch»'''
 			log.info(query)
 			Failsafe.with(policy).get[database.query(new Query(query, "orderbook"))]
 		].filter(hasData).forEach [
@@ -69,12 +70,14 @@ class LoadersDatabase {
 
 				val index = Integer.parseInt(tags.get("index"))
 				val side = tags.get("side")
+				val bought = Double.parseDouble(tags.get("bought"))
+				val sold = Double.parseDouble(tags.get("sold"))
 				(0 ..< values.size()).map [
 					try {
 						val time = DateUtils.parseDate(values.get(it).get(columns.indexOf("time")).toString(), #["yyyy-MM-dd'T'HH:mm:ss.SSSX", "yyyy-MM-dd'T'HH:mm:ss.SSSZ", "yyyy-MM-dd'T'HH:mm:ss.SSX", "yyyy-MM-dd'T'HH:mm:ss.SX", "yyyy-MM-dd'T'HH:mm:ssX"])
 						val value = values.get(it).get(columns.indexOf("value")) as Double
 						val amount = values.get(it).get(columns.indexOf("amount")) as Double
-						return new OrderPoint(time, side, index, value, amount)
+						return new OrderPoint(time, side, index, value, amount, bought, sold)
 					} catch(Exception e) {
 						log.error("Failed to parse " + it, e)
 						return null

@@ -1,6 +1,7 @@
 package com.sirolf2009.yggdrasil.kvasir
 
-import com.sirolf2009.yggdrasil.sif.TestData
+import com.sirolf2009.yggdrasil.freyr.TestData
+import com.sirolf2009.yggdrasil.freyr.model.TableOrderbook
 import com.sirolf2009.yggdrasil.sif.transmutation.OrderbookNormaliseDiffStdDev
 import controlP5.ControlP5
 import controlP5.ControlP5Constants
@@ -13,7 +14,6 @@ import java.util.stream.IntStream
 import java.util.stream.Stream
 import processing.core.PApplet
 import tech.tablesaw.api.DoubleColumn
-import tech.tablesaw.api.Table
 
 class SketchOrderbookOverTime extends PApplet {
 
@@ -23,13 +23,13 @@ class SketchOrderbookOverTime extends PApplet {
 		background = ControlP5Constants.WHITE
 		valueLabel = ControlP5Constants.FUCHSIA
 	]
-	val Table data
+	val TableOrderbook data
 	var GPlot orderbook
 	var ControlP5 cp5
 	var Slider slider
 	var scroll = 0
 
-	new(Table data) {
+	new(TableOrderbook data) {
 		this.data = data
 	}
 
@@ -82,7 +82,7 @@ class SketchOrderbookOverTime extends PApplet {
 		]
 	}
 
-	def static create(Table data) {
+	def static create(TableOrderbook data) {
 		runSketch(#[SketchOrderbookOverTime.name], new SketchOrderbookOverTime(data));
 	}
 

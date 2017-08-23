@@ -1,23 +1,24 @@
 package com.sirolf2009.yggdrasil.sif.transmutation
 
+import com.sirolf2009.yggdrasil.freyr.model.TableOrderbook
 import java.util.Arrays
 import java.util.function.Consumer
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
-import tech.tablesaw.api.DoubleColumn
-import tech.tablesaw.api.Table
 
-class OrderbookNormaliseDiffStdDev implements Consumer<Table> {
+class OrderbookNormaliseDiffStdDev implements Consumer<TableOrderbook> {
 
-	override accept(Table it) {
-		val priceColumns = columns.filter[name.contains("price")].map[it as DoubleColumn].toList()
-		val amountColumns = columns.filter[name.contains("amount")].map[it as DoubleColumn].toList()
-		val maxBidColumn = column("bid_price_0") as DoubleColumn
-		val minAskColumn = column("ask_price_0") as DoubleColumn
+	override accept(TableOrderbook it) {
+		val priceColumns = bidPrices + askPrices
+		val amountColumns =  askPrices + bidPrices
+		val maxBidColumn = bidPrices.get(0)
+		val minAskColumn = askPrices.get(0)
 		Arrays.stream(rows).forEach [
 			val maxBid = maxBidColumn.get(it)
 			val minAsk = minAskColumn.get(it)
 			val halfPrice = maxBid + (minAsk - maxBid)/2
+			println(halfPrice)
 			priceColumns.forEach[column|
+				println('''«column.name» «column.get(it)» -> «percentualDifference(column.get(it), halfPrice)»''')
 				column.set(it, percentualDifference(column.get(it), halfPrice))
 			]
 			
@@ -26,13 +27,14 @@ class OrderbookNormaliseDiffStdDev implements Consumer<Table> {
 			val amountMean = amountStats.mean
 			val amountStdDev = amountStats.standardDeviation
 			amountColumns.forEach[column|
+				println('''«column.name» «column.get(it)» -> «zScore(column.get(it), amountMean, amountStdDev)»''')
 				column.set(it, zScore(column.get(it), amountMean, amountStdDev))
 			]
 		]
 	}
 	
 	def static percentualDifference(double a, double b) {
-		return (a - b) / ((a + b) / 2)
+		return Math.abs(a - b) / ((a + b) / 2)
 	}
 	
 	def static zScore(double value, double mean, double stdDev) {
