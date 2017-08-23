@@ -45,6 +45,7 @@ class Freyr {
 					val batch = orderbook.parseOrderbook(time, database)
 					batch.point(Point.measurement("gdax").time(time, TimeUnit.MILLISECONDS).addField("bought", bought).addField("sold", sold).build())
 					influx.write(batch)
+					log.info(batch)
 				]
 				lastID = Optional.of(trades.getlastID)
 				Thread.sleep(Duration.ofSeconds(1).toMillis())

@@ -124,6 +124,7 @@ public class Freyr {
               final BatchPoints batch = Freyr.parseOrderbook(orderbook, time, arguments.getDatabase());
               batch.point(Point.measurement("gdax").time(time, TimeUnit.MILLISECONDS).addField("bought", bought).addField("sold", sold).build());
               influx.write(batch);
+              Freyr.log.info(batch);
             } catch (Throwable _e) {
               throw Exceptions.sneakyThrow(_e);
             }
