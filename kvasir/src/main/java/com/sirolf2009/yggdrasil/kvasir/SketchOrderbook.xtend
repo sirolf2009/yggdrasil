@@ -2,7 +2,6 @@ package com.sirolf2009.yggdrasil.kvasir
 
 import com.sirolf2009.yggdrasil.freyr.Arguments
 import com.sirolf2009.yggdrasil.freyr.SupplierOrderbookLive
-import com.sirolf2009.yggdrasil.kvasir.gui.basic.Slider
 import com.sirolf2009.yggdrasil.sif.transmutation.OrderbookNormaliseDiffStdDev
 import grafica.GPlot
 import grafica.GPoint
