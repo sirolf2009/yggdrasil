@@ -12,6 +12,6 @@ import org.eclipse.xtend.lib.annotations.ToString
 	@Parameter(names = "-influxPort", description="The port of the influxdb")
 	var int influxPort = 8086
 	@Parameter(names = "-database", description="The name of the database")
-	var String database = "orderbook"
+	var String database = "gdax"
 	
 }

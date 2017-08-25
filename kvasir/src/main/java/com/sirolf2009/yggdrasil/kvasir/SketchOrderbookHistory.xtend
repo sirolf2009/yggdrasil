@@ -3,7 +3,6 @@ package com.sirolf2009.yggdrasil.kvasir
 import com.sirolf2009.yggdrasil.freyr.Arguments
 import com.sirolf2009.yggdrasil.freyr.SupplierOrderbookLive
 import com.sirolf2009.yggdrasil.freyr.model.TableOrderbook
-import com.sirolf2009.yggdrasil.sif.transmutation.OrderbookNormaliseDiffStdDev
 import controlP5.ControlP5
 import controlP5.ControlP5Constants
 import controlP5.Slider
@@ -109,15 +108,9 @@ class SketchOrderbookHistory extends PApplet {
 
 	def static void main(String[] args) {
 		val take = 15
-		val normalise = new OrderbookNormaliseDiffStdDev()
 		val raw = new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take)
 		create(raw.first, [
 			val table = raw.get()
-			table
-		], take)
-		create(raw.first, [
-			val table = raw.get()
-			table.ifPresent(normalise)
 			table
 		], take)
 	}

@@ -3,8 +3,9 @@ package com.sirolf2009.yggdrasil.freyr
 import com.beust.jcommander.JCommander
 import java.time.Duration
 import java.util.List
-import java.util.Optional
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 import java.util.stream.Collectors
 import java.util.stream.Stream
 import org.apache.logging.log4j.LogManager
@@ -22,6 +23,7 @@ import org.knowm.xchange.gdax.GDAXExchange
 class Freyr {
 
 	static val log = LogManager.logger
+	static val executor = Executors.newFixedThreadPool(1)
 
 	def static void main(String[] args) {
 		extension val arguments = new Arguments()
@@ -32,47 +34,54 @@ class Freyr {
 		val marketData = exchange.marketDataService
 		val influx = InfluxDBFactory.connect("http://" + influxHost + ":" + influxPort)
 		influx.createDatabase(database)
-		var Optional<Long> lastID = Optional.empty()
+		val lastIDReference = new AtomicLong(-1)
 		while(true) {
 			try {
-				val trades = marketData.getTrades(CurrencyPair.BTC_EUR)
-				lastID.ifPresent[
-					val orderbook = marketData.getOrderBook(CurrencyPair.BTC_EUR)
-					val time = System.currentTimeMillis()
-					val newTrades = trades.trades.filter[trade| Long.parseLong(trade.id) > it].toList()
-					val bought = newTrades.stream().filter[type.equals(OrderType.BID)].map[tradableAmount].reduce[a,b|a.add(b)].map[doubleValue].orElse(0d)
-					val sold = newTrades.stream().filter[type.equals(OrderType.ASK)].map[tradableAmount].reduce[a,b|a.add(b)].map[doubleValue].orElse(0d)
-					val batch = orderbook.parseOrderbook(time, bought, sold, database)
-					influx.write(batch)
-					log.info(batch)
+				executor.submit [
+					val trades = marketData.getTrades(CurrencyPair.BTC_EUR)
+					val lastID = lastIDReference.get()
+					if(lastID != -1) {
+						val orderbook = marketData.getOrderBook(CurrencyPair.BTC_EUR)
+						val time = System.currentTimeMillis()
+						val newTrades = trades.trades.filter[trade|Long.parseLong(trade.id) > lastID].toList()
+						val boughtAmount = newTrades.stream().filter[type.equals(OrderType.BID)].count()
+						val soldAmount = newTrades.stream().filter[type.equals(OrderType.ASK)].count()
+						val boughtVolume = newTrades.stream().filter[type.equals(OrderType.BID)].map[tradableAmount].reduce[a, b|a.add(b)].map[doubleValue].orElse(0d)
+						val soldVolume = newTrades.stream().filter[type.equals(OrderType.ASK)].map[tradableAmount].reduce[a, b|a.add(b)].map[doubleValue].orElse(0d)
+						val last = newTrades.stream().sorted[a, b|b.timestamp.compareTo(a.timestamp)].findFirst.map[price.doubleValue].orElse(0d)
+						val batch = orderbook.parseOrderbook(time, database)
+						batch.point(Point.measurement("trades").addField("boughAmount", boughtAmount).addField("soldAmount", soldAmount).addField("boughtVolume", boughtVolume).addField("soldVolume", soldVolume).addField("previous", last).build())
+						influx.write(batch)
+						log.info(batch)
+					}
+					lastIDReference.set(trades.getlastID)
 				]
-				lastID = Optional.of(trades.getlastID)
 				Thread.sleep(Duration.ofSeconds(1).toMillis())
 			} catch(Exception e) {
 				log.error("Failed to retrieve orderbook from " + exchange, e)
 			}
 		}
 	}
-
-	def static parseOrderbook(OrderBook orderbook, long time, double bought, double sold, String database) {
+	
+	def static parseOrderbook(OrderBook orderbook, long time, String database) {
 		val points = BatchPoints.database(database).consistency(ConsistencyLevel.ALL).build()
-		orderbook.bids.parseBid(time, bought, sold).forEach[points.point(it)]
-		orderbook.asks.parseAsk(time, bought, sold).forEach[points.point(it)]
+		orderbook.bids.parseBid(time).forEach[points.point(it)]
+		orderbook.asks.parseAsk(time).forEach[points.point(it)]
 		return points
 	}
 
-	def static parseBid(List<LimitOrder> bids, long time, double bought, double sold) {
-		return bids.stream().sorted[a, b|b.limitPrice.compareTo(a.limitPrice)].collect().parse("bid", time, bought, sold)
+	def static parseBid(List<LimitOrder> bids, long time) {
+		return bids.stream().sorted[a, b|b.limitPrice.compareTo(a.limitPrice)].collect().parse("bid", time)
 	}
 
-	def static parseAsk(List<LimitOrder> asks, long time, double bought, double sold) {
-		return asks.stream().sorted[a, b|a.limitPrice.compareTo(b.limitPrice)].collect().parse("ask", time, bought, sold)
+	def static parseAsk(List<LimitOrder> asks, long time) {
+		return asks.stream().sorted[a, b|a.limitPrice.compareTo(b.limitPrice)].collect().parse("ask", time)
 	}
 
-	def static parse(List<LimitOrder> orders, String side, long time, double bought, double sold) {
+	def static parse(List<LimitOrder> orders, String side, long time) {
 		return orders.stream().limit(15).flatMap [
 			Stream.of(
-				Point.measurement("gdax").time(time, TimeUnit.MILLISECONDS).tag("index", orders.indexOf(it) + "").tag("side", side).addField("value", limitPrice.doubleValue()).addField("amount", tradableAmount.doubleValue()).addField("bought", bought).addField("sold", sold).build()
+				Point.measurement("limitorder").time(time, TimeUnit.MILLISECONDS).tag("index", orders.indexOf(it) + "").tag("side", side).addField("value", limitPrice.doubleValue()).addField("amount", tradableAmount.doubleValue()).build()
 			)
 		].collect()
 	}

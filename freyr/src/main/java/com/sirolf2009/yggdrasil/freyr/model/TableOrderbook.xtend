@@ -18,39 +18,43 @@ class TableOrderbook extends Table {
 	}
 	
 	def DateTimeColumn getDate() {
-		return column(0) as DateTimeColumn
+		return dateTimeColumn("datetime")
+	}
+	
+	def DoubleColumn getLast() {
+		return doubleColumn("last")
 	}
 	
 	def DoubleColumn getBought() {
-		return column(1) as DoubleColumn
+		return doubleColumn("bought")
 	}
 	
 	def DoubleColumn getSold() {
-		return column(2) as DoubleColumn
+		return doubleColumn("sold")
 	}
 	
 	def List<DoubleColumn> getBids() {
-		return (3 ..< 33).map[column(it) as DoubleColumn].toList()
+		return columns.filter[name.contains("bid")].map[it as DoubleColumn].toList()
 	}
 	
 	def List<DoubleColumn> getBidPrices() {
-		return (3 ..< 33).filter[it % 2 == 1].map[column(it) as DoubleColumn].toList() //prices are uneven indices
+		return columns.filter[name.contains("bid_price")].map[it as DoubleColumn].toList()
 	}
 	
 	def List<DoubleColumn> getBidAmounts() {
-		return (3 ..< 33).filter[it % 2 == 0].map[column(it) as DoubleColumn].toList() //amounts are even indices
+		return columns.filter[name.contains("bid_amount")].map[it as DoubleColumn].toList()
 	}
 	
 	def List<DoubleColumn> getAsks() {
-		return (33 ..< 63).map[column(it) as DoubleColumn].toList()
+		return columns.filter[name.contains("ask")].map[it as DoubleColumn].toList()
 	}
 	
 	def List<DoubleColumn> getAskPrices() {
-		return (33 ..< 63).filter[it % 2 == 1].map[column(it) as DoubleColumn].toList() //prices are uneven indices
+		return columns.filter[name.contains("ask_price")].map[it as DoubleColumn].toList()
 	}
 	
 	def List<DoubleColumn> getAskAmounts() {
-		return (33 ..< 63).filter[it % 2 == 0].map[column(it) as DoubleColumn].toList() //amounts are even indices
+		return columns.filter[name.contains("ask_amount")].map[it as DoubleColumn].toList()
 	}
 	
 	override TableOrderbook fullCopy() {
@@ -75,6 +79,7 @@ class TableOrderbook extends Table {
 	
 	public static val OrderbookColumns = #[
 			LOCAL_DATE_TIME, // 0     datetime   
+			DOUBLE, // 1     last
 			DOUBLE, // 1     bought
 			DOUBLE, // 2     sold
 			DOUBLE, // 3     bid_price_0   

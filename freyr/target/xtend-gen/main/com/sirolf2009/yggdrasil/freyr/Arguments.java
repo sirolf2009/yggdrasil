@@ -19,7 +19,7 @@ public class Arguments {
   private int influxPort = 8086;
   
   @Parameter(names = "-database", description = "The name of the database")
-  private String database = "orderbook";
+  private String database = "gdax";
   
   @Pure
   public String getInfluxHost() {
