@@ -3,24 +3,14 @@ package com.sirolf2009.yggdrasil.vor;
 import com.beust.jcommander.JCommander;
 import com.sirolf2009.yggdrasil.freyr.TestData;
 import com.sirolf2009.yggdrasil.freyr.model.TableOrderbook;
-import com.sirolf2009.yggdrasil.sif.TrainingData;
-import com.sirolf2009.yggdrasil.sif.loader.LoadersFile;
 import com.sirolf2009.yggdrasil.sif.saver.SaversFile;
-import com.sirolf2009.yggdrasil.sif.transmutation.CSV;
-import com.sirolf2009.yggdrasil.sif.transmutation.INDArrays;
-import com.sirolf2009.yggdrasil.vor.Predict;
 import com.sirolf2009.yggdrasil.vor.RNN;
 import com.sirolf2009.yggdrasil.vor.data.Arguments;
 import com.sirolf2009.yggdrasil.vor.data.DataFormat;
 import com.sirolf2009.yggdrasil.vor.data.PrepareOrderbook;
 import com.sirolf2009.yggdrasil.vor.data.TrainAndTestData;
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -75,7 +65,8 @@ public class Vor {
       final DataFormat format = new PrepareOrderbook(Vor.baseDir, _orderbookRows, _steps, _minibatch).call();
       @Extension
       final TrainAndTestData datasets = Vor.getData(format);
-      final MultiLayerNetwork net = new RNN(format).get();
+      int _numOfVariables = format.getNumOfVariables();
+      final MultiLayerNetwork net = new RNN(_numOfVariables).get();
       final int epochs = 100;
       Vor.log.info("Training...");
       final Consumer<Integer> _function = (Integer it) -> {
@@ -88,36 +79,6 @@ public class Vor {
     } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
-  }
-  
-  public static void showPredictions(@Extension final Arguments arguments) {
-    StringConcatenation _builder = new StringConcatenation();
-    _builder.append("http://");
-    String _influxHost = arguments.getInfluxHost();
-    _builder.append(_influxHost);
-    _builder.append(":");
-    int _influxPort = arguments.getInfluxPort();
-    _builder.append(_influxPort);
-    final Optional<List<INDArray>> predictData = TrainingData.getPredictData(_builder.toString(), 5000);
-    final Consumer<File> _function = (File it) -> {
-      try {
-        final ArrayList<INDArray> prediction = Predict.predict(LoadersFile.loadNetwork(it), predictData.get(), (60 * 15));
-        final String csv = INDArrays.toMatrix().<List<String>>andThen(CSV.matrixToCSV).<String>andThen(CSV.joinAsLines).apply(prediction);
-        String _name = it.getName();
-        String _plus = ("data/predict-csv/" + _name);
-        String _plus_1 = (_plus + ".csv");
-        Path _get = Paths.get(_plus_1);
-        String _plus_2 = ("Wrote to " + _get);
-        Vor.log.info(_plus_2);
-        String _name_1 = it.getName();
-        String _plus_3 = ("data/predict-csv/" + _name_1);
-        String _plus_4 = (_plus_3 + ".csv");
-        Files.write(Paths.get(_plus_4), csv.getBytes());
-      } catch (Throwable _e) {
-        throw Exceptions.sneakyThrow(_e);
-      }
-    };
-    ((List<File>)Conversions.doWrapArray(new File("data/predict").listFiles())).forEach(_function);
   }
   
   public static void showRegressionEvaluation(final MultiLayerNetwork net, final DataSetIterator testDataIter, final int numOfVariables, final int epoch) {

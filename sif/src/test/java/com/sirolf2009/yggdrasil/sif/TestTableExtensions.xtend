@@ -1,4 +1,4 @@
-package com.yggdrasil.sif
+package com.sirolf2009.yggdrasil.sif
 
 import com.sirolf2009.yggdrasil.freyr.TestData
 import java.io.File
@@ -13,9 +13,28 @@ import static extension com.sirolf2009.yggdrasil.sif.TableExtensions.*
 class TestTableExtensions {
 	
 	@Test
+	def void testToMatrixToTable() {
+		val data = TestData.orderbookRows
+		val matrix = data.toMatrix()
+		val reconstructed = matrix.toTable(data.date.get(0), data.name)
+		Assert.assertEquals(data.columnNames, reconstructed.columnNames)
+		Assert.assertEquals(data.date.get(0), reconstructed.date.get(0))
+		data.columnNames.filter[!it.equals("datetime")].forEach[
+			Assert.assertEquals(data.doubleColumn(it).get(0), reconstructed.doubleColumn(it).get(0), 0.00001)
+		]
+	}
+	
+	@Test
+	def void testToMatrix() {
+		val data = TestData.orderbookRows
+		val matrix = data.toMatrix()
+		Assert.assertEquals(FileUtils.readFileToString(new File("src/test/resources/TestTableExtensions/TestToMatrix")).trim(), matrix.toString().trim())
+	}
+	
+	@Test
 	def void testRowArrayToTable() {
 		val data = TestData.orderbookSimple
-		val array = data.rowArray(0)
+		val array = data.toArray(0)
 		val reconstructed = array.toTable(data.date.get(0), data.name)
 		Assert.assertEquals(data.columnNames, reconstructed.columnNames)
 		Assert.assertEquals(data.date.get(0), reconstructed.date.get(0))
@@ -33,10 +52,10 @@ class TestTableExtensions {
 	}
 	
 	@Test
-	def void testRowArray() {
+	def void testToArray() {
 		val data = TestData.orderbookRows
-		val sliced = data.rowArray(0)
-		Assert.assertEquals(FileUtils.readFileToString(new File("src/test/resources/TestTableExtensions/TestRowArray")).trim(), sliced.toString().trim())
+		val sliced = data.toArray(0)
+		Assert.assertEquals(FileUtils.readFileToString(new File("src/test/resources/TestTableExtensions/TestToArray")).trim(), sliced.toString().trim())
 	}
 	
 	@Test
@@ -54,3 +73,4 @@ class TestTableExtensions {
 	}
 	
 }
+	

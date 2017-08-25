@@ -3,8 +3,9 @@ package com.sirolf2009.yggdrasil.kvasir
 import com.sirolf2009.yggdrasil.freyr.Arguments
 import com.sirolf2009.yggdrasil.freyr.SupplierOrderbookLive
 import com.sirolf2009.yggdrasil.freyr.model.TableOrderbook
-import com.sirolf2009.yggdrasil.sif.loader.LoadersFile
 import com.sirolf2009.yggdrasil.sif.transmutation.OrderbookNormaliseDiffStdDev
+import com.sirolf2009.yggdrasil.vor.Predict
+import com.sirolf2009.yggdrasil.vor.RNN
 import controlP5.ControlP5
 import controlP5.ControlP5Constants
 import controlP5.Slider
@@ -12,8 +13,6 @@ import grafica.GPlot
 import grafica.GPoint
 import grafica.GPointsArray
 import java.time.Duration
-import java.time.temporal.ChronoUnit
-import java.util.ArrayList
 import java.util.Optional
 import java.util.function.Supplier
 import java.util.stream.Collectors
@@ -27,6 +26,8 @@ import processing.core.PApplet
 import tech.tablesaw.api.DoubleColumn
 
 import static extension com.sirolf2009.yggdrasil.sif.TableExtensions.*
+import java.util.concurrent.atomic.AtomicBoolean
+import processing.core.PFont
 
 class SketchOrderbookHistoryPredict extends PApplet {
 
@@ -46,6 +47,7 @@ class SketchOrderbookHistoryPredict extends PApplet {
 	var ControlP5 cp5
 	var Slider sliderZoom
 	var zoom = 60
+	var PFont font
 
 	new(TableOrderbook data, Supplier<Optional<TableOrderbook>> supplier, int take, MultiLayerNetwork net, int ahead) {
 		this.supplier = supplier
@@ -66,7 +68,7 @@ class SketchOrderbookHistoryPredict extends PApplet {
 
 	def synchronized appendData(TableOrderbook data) {
 		this.data.append(data)
-		this.predictionData = data.predict()
+		this.predictionData = this.data.predict()
 	}
 
 	override settings() {
@@ -90,6 +92,10 @@ class SketchOrderbookHistoryPredict extends PApplet {
 
 		cp5 = new ControlP5(this)
 		sliderZoom = cp5.addSlider("zoom").setPosition(40, 770).setRange(1, 60 * 15).setWidth(950).setHeight(20).setColor(color).setValue(60).setLabelVisible(true)
+
+		font = createFont("Arial", 16, true);
+
+		frameRate(1)
 	}
 
 	override synchronized draw() {
@@ -118,12 +124,16 @@ class SketchOrderbookHistoryPredict extends PApplet {
 		}
 
 		{
+			val hasNaN = new AtomicBoolean(false)
 			val predictions = new GPointsArray(ahead * take * 2)
 			(0 ..< Math.min(predictionData.rowCount - 1, ahead)).forEach [ indexInScreen |
 				predictionData.columns.stream.skip(1).collect(Collectors.toList()).forEach [ it, indexInFrame |
 					if(name.contains("price")) {
 						val value = Math.abs((it as DoubleColumn).get(predictionData.rowCount - 1 - indexInScreen).floatValue())
 						predictions.add(new GPoint(ahead - indexInScreen, value, name))
+						if(value.isNaN) {
+							hasNaN.set(true)
+						}
 					}
 				]
 			]
@@ -138,6 +148,11 @@ class SketchOrderbookHistoryPredict extends PApplet {
 				drawPoints()
 				endDraw()
 			]
+			if(hasNaN.get) {
+				textFont(font, 16)
+				fill(0) 
+				text("NaN issues!", 450, 340); // STEP 5 Display Text
+			}
 		}
 	}
 
@@ -152,22 +167,14 @@ class SketchOrderbookHistoryPredict extends PApplet {
 	def predict(TableOrderbook data) {
 		val normalised = data.fullCopy()
 		new OrderbookNormaliseDiffStdDev().accept(normalised)
-		val predictions = new ArrayList()
-		var previous = normalised.rowArray(data.rowCount - 1)
-		for (var i = 0; i < ahead; i++) {
-			val prediction = net.rnnTimeStep(previous)
-			predictions.add(prediction)
-			previous = prediction
-		}
-		val date = normalised.date.get(data.date.size-1)
-		val nextDate = date.plus(1, ChronoUnit.SECONDS)
-		Nd4j.vstack(predictions).toTable(nextDate, data.name + "-predicted")
+		val date = normalised.date.get(data.date.size - 1)
+		return Nd4j.vstack(Predict.predictMultiStep(net, normalised, 60)).toTable(date, data.name + "-predicted")
 	}
 
 	def static void main(String[] args) {
 		val take = 15
 		val supplier = new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take)
-		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("../vor/data/predict-net/predict_99.zip"), 60)
+		create(supplier.first, supplier.normalised, take, new RNN(63).get(), 2)
 	}
 
 	def static getFirst(Supplier<Optional<TableOrderbook>> supplier) {

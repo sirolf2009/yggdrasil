@@ -2,7 +2,9 @@ package com.sirolf2009.yggdrasil.sif
 
 import com.sirolf2009.yggdrasil.freyr.model.TableOrderbook
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.ArrayList
+import java.util.Arrays
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 import tech.tablesaw.api.DateTimeColumn
@@ -10,11 +12,12 @@ import tech.tablesaw.api.DoubleColumn
 import tech.tablesaw.api.Table
 import tech.tablesaw.columns.Column
 import tech.tablesaw.util.BitmapBackedSelection
-import tech.tablesaw.api.ColumnType
-import java.util.Arrays
-import java.time.temporal.ChronoUnit
 
 class TableExtensions {
+	
+	def static toMatrix(TableOrderbook table) {
+		return Nd4j.vstack((0 ..< table.rowCount).map[table.toArray(it)].toList())
+	}
 	
 	def static toTable(INDArray array, LocalDateTime time, String name) {
 		val shape = array.shape
@@ -24,7 +27,7 @@ class TableExtensions {
 			val datetimeColumn = new DateTimeColumn("datetime")
 			val columns = (0 ..< shape.get(1)).map[
 				val desc = TableOrderbook.OrderbookColumns.get(it+1)
-				new DoubleColumn(desc.name)
+				return new DoubleColumn(desc.name)
 			].toList()
 			(0 ..< shape.get(0)).forEach[row|
 				datetimeColumn.add(time.plus(row, ChronoUnit.SECONDS))
@@ -39,17 +42,17 @@ class TableExtensions {
 		}
 	}
 	
-	def static INDArray rowArray(TableOrderbook table, int index) {
+	def static INDArray toArray(TableOrderbook table, int index) {
 		val row = table.row(index)
-		Nd4j.create(row.columns.filter[type != ColumnType.LOCAL_DATE_TIME].map[(it as DoubleColumn).get(0)].toList())
+		Nd4j.create(row.doubleColumns.map[(it as DoubleColumn).get(0)].toList())
 	}
 	
-	def static row(Table table, int index) {
-		table.selectWhere(index(index))
+	def static row(TableOrderbook table, int index) {
+		new TableOrderbook(table.selectWhere(index(index)))
 	}
 	
-	def static rows(Table table, int from, int to) {
-		table.selectWhere(range(from, to))
+	def static rows(TableOrderbook table, int from, int to) {
+		new TableOrderbook(table.selectWhere(range(from, to)))
 	}
 	
 	def static index(int index) {
@@ -62,6 +65,10 @@ class TableExtensions {
 		val selection = new BitmapBackedSelection()
 		selection.addRange(from, to)
 		return selection
+	}
+	
+	def static doubleColumns(Table table) {
+		table.columns.filter[it instanceof DoubleColumn].map[it as DoubleColumn].toList()
 	}
 	
 }

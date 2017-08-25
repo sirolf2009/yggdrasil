@@ -1,6 +1,5 @@
 package com.sirolf2009.yggdrasil.vor;
 
-import com.sirolf2009.yggdrasil.vor.data.DataFormat;
 import java.util.function.Supplier;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
@@ -11,7 +10,6 @@ import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.eclipse.xtend.lib.annotations.Data;
-import org.eclipse.xtext.xbase.lib.Extension;
 import org.eclipse.xtext.xbase.lib.ObjectExtensions;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 import org.eclipse.xtext.xbase.lib.Pure;
@@ -22,13 +20,13 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 @Data
 @SuppressWarnings("all")
 public class RNN implements Supplier<MultiLayerNetwork> {
-  @Extension
-  private final DataFormat format;
+  private final int numOfVariables;
   
   @Override
   public MultiLayerNetwork get() {
     NeuralNetConfiguration.Builder _builder = new NeuralNetConfiguration.Builder();
     final Procedure1<NeuralNetConfiguration.Builder> _function = (NeuralNetConfiguration.Builder it) -> {
+      it.setSeed(123);
       it.setOptimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT);
       it.iterations(1);
       it.setWeightInit(WeightInit.XAVIER);
@@ -40,14 +38,8 @@ public class RNN implements Supplier<MultiLayerNetwork> {
     final NeuralNetConfiguration.Builder builder = ObjectExtensions.<NeuralNetConfiguration.Builder>operator_doubleArrow(_builder, _function);
     NeuralNetConfiguration.ListBuilder _list = builder.list();
     final Procedure1<NeuralNetConfiguration.ListBuilder> _function_1 = (NeuralNetConfiguration.ListBuilder it) -> {
-      GravesLSTM.Builder _nIn = new GravesLSTM.Builder().rmsDecay(0.95).activation(Activation.TANH).updater(Updater.RMSPROP).nIn(this.format.getNumOfVariables());
-      int _numOfVariables = this.format.getNumOfVariables();
-      int _multiply = (_numOfVariables * 3);
-      it.layer(0, _nIn.nOut(_multiply).build());
-      RnnOutputLayer.Builder _activation = new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE).momentum(0.9).activation(Activation.IDENTITY);
-      int _numOfVariables_1 = this.format.getNumOfVariables();
-      int _multiply_1 = (_numOfVariables_1 * 3);
-      it.layer(1, _activation.nIn(_multiply_1).nOut(this.format.getNumOfVariables()).build());
+      it.layer(0, new GravesLSTM.Builder().rmsDecay(0.95).activation(Activation.TANH).updater(Updater.RMSPROP).nIn(this.numOfVariables).nOut((this.numOfVariables * 3)).build());
+      it.layer(1, new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE).momentum(0.9).activation(Activation.IDENTITY).nIn((this.numOfVariables * 3)).nOut(this.numOfVariables).build());
     };
     final NeuralNetConfiguration.ListBuilder config = ObjectExtensions.<NeuralNetConfiguration.ListBuilder>operator_doubleArrow(_list, _function_1);
     MultiLayerConfiguration _build = config.build();
@@ -56,9 +48,9 @@ public class RNN implements Supplier<MultiLayerNetwork> {
     return net;
   }
   
-  public RNN(final DataFormat format) {
+  public RNN(final int numOfVariables) {
     super();
-    this.format = format;
+    this.numOfVariables = numOfVariables;
   }
   
   @Override
@@ -66,7 +58,7 @@ public class RNN implements Supplier<MultiLayerNetwork> {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((this.format== null) ? 0 : this.format.hashCode());
+    result = prime * result + this.numOfVariables;
     return result;
   }
   
@@ -80,10 +72,7 @@ public class RNN implements Supplier<MultiLayerNetwork> {
     if (getClass() != obj.getClass())
       return false;
     RNN other = (RNN) obj;
-    if (this.format == null) {
-      if (other.format != null)
-        return false;
-    } else if (!this.format.equals(other.format))
+    if (other.numOfVariables != this.numOfVariables)
       return false;
     return true;
   }
@@ -92,12 +81,12 @@ public class RNN implements Supplier<MultiLayerNetwork> {
   @Pure
   public String toString() {
     ToStringBuilder b = new ToStringBuilder(this);
-    b.add("format", this.format);
+    b.add("numOfVariables", this.numOfVariables);
     return b.toString();
   }
   
   @Pure
-  public DataFormat getFormat() {
-    return this.format;
+  public int getNumOfVariables() {
+    return this.numOfVariables;
   }
 }

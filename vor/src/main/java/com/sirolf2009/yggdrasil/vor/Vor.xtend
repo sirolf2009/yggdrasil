@@ -1,17 +1,13 @@
 package com.sirolf2009.yggdrasil.vor
 
 import com.beust.jcommander.JCommander
-import com.sirolf2009.yggdrasil.sif.TrainingData
-import com.sirolf2009.yggdrasil.sif.loader.LoadersFile
+import com.sirolf2009.yggdrasil.freyr.TestData
 import com.sirolf2009.yggdrasil.sif.saver.SaversFile.NetToFile
-import com.sirolf2009.yggdrasil.sif.transmutation.CSV
-import com.sirolf2009.yggdrasil.sif.transmutation.INDArrays
 import com.sirolf2009.yggdrasil.vor.data.Arguments
 import com.sirolf2009.yggdrasil.vor.data.DataFormat
+import com.sirolf2009.yggdrasil.vor.data.PrepareOrderbook
 import com.sirolf2009.yggdrasil.vor.data.TrainAndTestData
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
 import org.apache.logging.log4j.LogManager
 import org.datavec.api.records.reader.impl.csv.CSVSequenceRecordReader
 import org.datavec.api.split.NumberedFileInputSplit
@@ -20,8 +16,6 @@ import org.deeplearning4j.datasets.datavec.SequenceRecordReaderDataSetIterator.A
 import org.deeplearning4j.eval.RegressionEvaluation
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator
-import com.sirolf2009.yggdrasil.vor.data.PrepareOrderbook
-import com.sirolf2009.yggdrasil.freyr.TestData
 
 class Vor {
 
@@ -53,7 +47,7 @@ class Vor {
 		extension val datasets = getData(format)
 //		val predictData = TrainingData.getPredictData('''http://«influxHost»:«influxPort»''', 60*15)
 //		val predictData = TrainingData.readPredictDataLarge(new File("data/orderbook"))
-		val net = new RNN(format).get()
+		val net = new RNN(numOfVariables).get()
 		val epochs = 100
 		log.info("Training...")
 		(0 ..< epochs).forEach [
@@ -62,16 +56,6 @@ class Vor {
 			new NetToFile(new File(networkFolder, "predict_" + it + ".zip")).accept(net)
 //			val prediction = INDArrays.toMatrix.andThen(CSV.matrixToCSV).andThen(CSV.joinAsLines).apply(Predict.predict(net, predictData, 60*15))
 //			FileUtils.write(new File(predictionFolder, "predict_" + it + ".csv"), prediction)
-		]
-	}
-	
-	def static showPredictions(extension Arguments arguments) {
-		val predictData = TrainingData.getPredictData('''http://«influxHost»:«influxPort»''', 5000)
-		new File("data/predict").listFiles.forEach[
-			val prediction = Predict.predict(LoadersFile.loadNetwork(it), predictData.get(), 60*15)
-			val csv = INDArrays.toMatrix.andThen(CSV.matrixToCSV).andThen(CSV.joinAsLines).apply(prediction)
-			log.info("Wrote to "+Paths.get("data/predict-csv/"+name+".csv"))
-			Files.write(Paths.get("data/predict-csv/"+name+".csv"), csv.bytes)
 		]
 	}
 

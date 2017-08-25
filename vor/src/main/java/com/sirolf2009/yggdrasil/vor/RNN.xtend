@@ -1,6 +1,5 @@
 package com.sirolf2009.yggdrasil.vor
 
-import com.sirolf2009.yggdrasil.vor.data.DataFormat
 import java.util.function.Supplier
 import org.deeplearning4j.nn.api.OptimizationAlgorithm
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration
@@ -14,11 +13,12 @@ import org.nd4j.linalg.activations.Activation
 import org.nd4j.linalg.lossfunctions.LossFunctions
 
 @Data class RNN implements Supplier<MultiLayerNetwork> {
-	
-	extension val DataFormat format
+
+	int numOfVariables
 	
 	override get() {
 		val builder = new NeuralNetConfiguration.Builder() => [
+			seed = 123
 			optimizationAlgo = OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT
 			iterations(1)
 			weightInit = WeightInit.XAVIER

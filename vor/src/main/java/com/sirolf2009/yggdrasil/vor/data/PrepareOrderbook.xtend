@@ -48,10 +48,10 @@ import static extension org.apache.commons.io.FileUtils.*
 			val labelsPath = Paths.get('''«labelsDirTrain.absolutePath»/train_«it».csv''')
 			val set = data.rows(it, it+numberOfTimesteps)
 			set.removeColumns("datetime")
-			set.write().csv(featuresPath.toString());
+			set.write().csv(featuresPath.toString())
 			val outcome = data.selectWhere(index(it+numberOfTimesteps))
 			outcome.removeColumns("datetime")
-			set.write().csv(labelsPath.toString());
+			set.write().csv(labelsPath.toString())
 		]
 
 		(trainSize .. (numberOfTimesteps + trainSize)).toList.parallelStream.forEach [
@@ -59,10 +59,10 @@ import static extension org.apache.commons.io.FileUtils.*
 			val labelsPath = Paths.get('''«labelsDirTest.absolutePath»/test_«it».csv''')
 			val set = data.rows(it, it+numberOfTimesteps)
 			set.removeColumns("datetime")
-			set.write().csv(featuresPath.toString());
+			set.write().csv(featuresPath.toString())
 			val outcome = data.selectWhere(index(it+numberOfTimesteps))
 			outcome.removeColumns("datetime")
-			set.write().csv(labelsPath.toString());
+			set.write().csv(labelsPath.toString())
 		]
 
 		return new DataFormat(trainSize, numberOfTimesteps, numberOfTimesteps, data.columnCount-1, miniBatchSize, baseDir, featuresDirTrain, labelsDirTrain, featuresDirTest, labelsDirTest)
