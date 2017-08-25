@@ -12,7 +12,7 @@ class TestData {
 	}
 
 	def static getOrderbookRows() {
-		new TableOrderbook(Table.read().csv(reader(TestData.classLoader.getResourceAsStream("orderbook-simple.csv"), "Orderbook-Rows")))
+		new TableOrderbook(Table.read().csv(reader(TestData.classLoader.getResourceAsStream("orderbook-rows.csv"), "Orderbook-Rows")))
 	}
 	
 	def static reader(InputStream data, String name) {

@@ -17,9 +17,9 @@ import java.time.temporal.ChronoUnit
 class TableExtensions {
 	
 	def static toTable(INDArray array, LocalDateTime time, String name) {
-		val shape = array.shape //60,63
+		val shape = array.shape
 		if(shape.length != 2 || shape.get(1) != 63) {
-			throw new IllegalArgumentException("Not an orderbook! Expected shape [60,63], actual shape "+Arrays.toString(shape))
+			throw new IllegalArgumentException('''Not an orderbook! Expected shape [rows,63], actual shape "+«Arrays.toString(shape)»''')
 		} else {
 			val datetimeColumn = new DateTimeColumn("datetime")
 			val columns = (0 ..< shape.get(1)).map[
