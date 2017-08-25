@@ -15,6 +15,7 @@ import java.util.stream.Stream
 import processing.core.PApplet
 import tech.tablesaw.api.DoubleColumn
 
+@Deprecated
 class SketchOrderbookOverTime extends PApplet {
 
 	static val take = 15

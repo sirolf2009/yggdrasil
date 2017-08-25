@@ -1,6 +1,7 @@
 package com.sirolf2009.yggdrasil.freyr
 
 import com.beust.jcommander.JCommander
+import com.google.common.util.concurrent.AtomicDouble
 import java.time.Duration
 import java.util.List
 import java.util.concurrent.Executors
@@ -24,6 +25,8 @@ class Freyr {
 
 	static val log = LogManager.logger
 	static val executor = Executors.newFixedThreadPool(1)
+	
+	//FIXME I need to start using SupplierOrderbookLive
 
 	def static void main(String[] args) {
 		extension val arguments = new Arguments()
@@ -35,6 +38,7 @@ class Freyr {
 		val influx = InfluxDBFactory.connect("http://" + influxHost + ":" + influxPort)
 		influx.createDatabase(database)
 		val lastIDReference = new AtomicLong(-1)
+		val lastPriceReference = new AtomicDouble(-1)
 		while(true) {
 			try {
 				executor.submit [
@@ -48,7 +52,8 @@ class Freyr {
 						val soldAmount = newTrades.stream().filter[type.equals(OrderType.ASK)].count()
 						val boughtVolume = newTrades.stream().filter[type.equals(OrderType.BID)].map[tradableAmount].reduce[a, b|a.add(b)].map[doubleValue].orElse(0d)
 						val soldVolume = newTrades.stream().filter[type.equals(OrderType.ASK)].map[tradableAmount].reduce[a, b|a.add(b)].map[doubleValue].orElse(0d)
-						val last = newTrades.stream().sorted[a, b|b.timestamp.compareTo(a.timestamp)].findFirst.map[price.doubleValue].orElse(0d)
+						val last = newTrades.stream().sorted[a, b|b.timestamp.compareTo(a.timestamp)].findFirst.map[price.doubleValue].orElse(lastPriceReference.get())
+						lastPriceReference.set(last)
 						val batch = orderbook.parseOrderbook(time, database)
 						batch.point(Point.measurement("trades").addField("boughAmount", boughtAmount).addField("soldAmount", soldAmount).addField("boughtVolume", boughtVolume).addField("soldVolume", soldVolume).addField("previous", last).build())
 						influx.write(batch)

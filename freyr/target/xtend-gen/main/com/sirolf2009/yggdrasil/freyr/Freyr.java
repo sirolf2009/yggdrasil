@@ -1,6 +1,7 @@
 package com.sirolf2009.yggdrasil.freyr;
 
 import com.beust.jcommander.JCommander;
+import com.google.common.util.concurrent.AtomicDouble;
 import com.sirolf2009.yggdrasil.freyr.Arguments;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -58,6 +59,7 @@ public class Freyr {
     final InfluxDB influx = InfluxDBFactory.connect(_plus_2);
     influx.createDatabase(arguments.getDatabase());
     final AtomicLong lastIDReference = new AtomicLong((-1));
+    final AtomicDouble lastPriceReference = new AtomicDouble((-1));
     while (true) {
       try {
         final Runnable _function = () -> {
@@ -112,7 +114,8 @@ public class Freyr {
               final Function<Trade, Double> _function_13 = (Trade it) -> {
                 return Double.valueOf(it.getPrice().doubleValue());
               };
-              final Double last = newTrades.stream().sorted(_function_12).findFirst().<Double>map(_function_13).orElse(Double.valueOf(0d));
+              final Double last = newTrades.stream().sorted(_function_12).findFirst().<Double>map(_function_13).orElse(Double.valueOf(lastPriceReference.get()));
+              lastPriceReference.set((last).doubleValue());
               final BatchPoints batch = Freyr.parseOrderbook(orderbook, time, arguments.getDatabase());
               batch.point(Point.measurement("trades").addField("boughAmount", boughtAmount).addField("soldAmount", soldAmount).addField("boughtVolume", boughtVolume).addField("soldVolume", soldVolume).addField("previous", last).build());
               influx.write(batch);

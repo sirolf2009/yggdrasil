@@ -10,14 +10,12 @@ class OrderbookNormaliseDiffStdDev implements Consumer<TableOrderbook> {
 	override accept(TableOrderbook it) {
 		val priceColumns = bidPrices + askPrices
 		val amountColumns =  askAmounts + bidAmounts
-		val maxBidColumn = bidPrices.get(0)
-		val minAskColumn = askPrices.get(0)
+		val lastColumn = getLast()
 		Arrays.stream(rows).forEach [
-			val maxBid = maxBidColumn.get(it)
-			val minAsk = minAskColumn.get(it)
-			val halfPrice = maxBid + (minAsk - maxBid)/2
+			val lastPrice = lastColumn.get(it)
 			priceColumns.forEach[column|
-				column.set(it, percentualDifference(column.get(it), halfPrice))
+				println("lastPrice: "+lastPrice+" "+column.name+": "+column.get(it) +" -> "+percentualDifference(column.get(it), lastPrice))
+				column.set(it, percentualDifference(column.get(it), lastPrice))
 			]
 			
 			val amounts = amountColumns.map[col|col.get(it)].toList()

@@ -99,4 +99,13 @@ import org.eclipse.xtend.lib.annotations.Accessors
 		}
 	}
 
+	def static Supplier<Optional<TableOrderbook>> normalised(Supplier<Optional<TableOrderbook>> supplier) {
+		val normalise = new OrderbookNormaliseDiffStdDev()
+		return [
+			val data =  supplier.get()
+			data.ifPresent(normalise)
+			data
+		]
+	}
+
 }

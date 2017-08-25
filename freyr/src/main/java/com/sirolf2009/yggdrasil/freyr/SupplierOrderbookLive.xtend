@@ -21,6 +21,7 @@ import org.knowm.xchange.service.marketdata.MarketDataService
 import tech.tablesaw.api.DateTimeColumn
 import tech.tablesaw.api.DoubleColumn
 import tech.tablesaw.columns.Column
+import com.google.common.util.concurrent.AtomicDouble
 
 class SupplierOrderbookLive implements Supplier<Optional<TableOrderbook>> {
 
@@ -30,6 +31,7 @@ class SupplierOrderbookLive implements Supplier<Optional<TableOrderbook>> {
 	val Duration timeout
 	val int take
 	val lastIDReference = new AtomicLong(-1)
+	val lastPriceReference = new AtomicDouble(-1)
 
 	new(extension Arguments arguments, String exchangeName, CurrencyPair pair, Duration timeout, int take) {
 		exchange = ExchangeFactory.INSTANCE.createExchange(exchangeName)
@@ -47,10 +49,11 @@ class SupplierOrderbookLive implements Supplier<Optional<TableOrderbook>> {
 		if(lastID != -1) {
 			val orderbook = marketData.getOrderBook(pair)
 			val newTrades = trades.trades.filter[trade|Long.parseLong(trade.id) > lastID].toList()
-			val last = new DoubleColumn("last", new DoubleArrayList(#[newTrades.stream().sorted[a, b|b.timestamp.compareTo(a.timestamp)].findFirst.map[price.doubleValue].orElse(0d)]))
+			val last = new DoubleColumn("last", new DoubleArrayList(#[newTrades.stream().sorted[a, b|b.timestamp.compareTo(a.timestamp)].findFirst.map[price.doubleValue].orElse(lastPriceReference.get())]))
 			val bought = new DoubleColumn("bought", new DoubleArrayList(#[newTrades.stream().filter[type.equals(OrderType.BID)].map[tradableAmount].reduce[a, b|a.add(b)].map[doubleValue].orElse(0d)]))
 			val sold = new DoubleColumn("sold", new DoubleArrayList(#[newTrades.stream().filter[type.equals(OrderType.ASK)].map[tradableAmount].reduce[a, b|a.add(b)].map[doubleValue].orElse(0d)]))
 			result = Optional.of(orderbook.parseOrderbook(last, bought, sold))
+			lastPriceReference.set(last.getDouble(0))
 		}
 		lastIDReference.set(trades.getlastID)
 		return result
