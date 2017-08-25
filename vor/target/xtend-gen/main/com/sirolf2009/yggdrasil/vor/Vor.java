@@ -78,11 +78,14 @@ public class Vor {
       final MultiLayerNetwork net = new RNN(format).get();
       final int epochs = 100;
       Vor.log.info("Training...");
-      final Consumer<Integer> _function = (Integer it) -> {
-        net.fit(datasets.getTrainData());
-        datasets.getTrainData().reset();
-        File _file = new File(networkFolder, (("predict_" + it) + ".zip"));
-        new SaversFile.NetToFile(_file).accept(net);
+      final Consumer<Integer> _function = new Consumer<Integer>() {
+        @Override
+        public void accept(final Integer it) {
+          net.fit(datasets.getTrainData());
+          datasets.getTrainData().reset();
+          File _file = new File(networkFolder, (("predict_" + it) + ".zip"));
+          new SaversFile.NetToFile(_file).accept(net);
+        }
       };
       new ExclusiveRange(0, epochs, true).forEach(_function);
     } catch (Throwable _e) {
@@ -99,22 +102,25 @@ public class Vor {
     int _influxPort = arguments.getInfluxPort();
     _builder.append(_influxPort);
     final Optional<List<INDArray>> predictData = TrainingData.getPredictData(_builder.toString(), 5000);
-    final Consumer<File> _function = (File it) -> {
-      try {
-        final ArrayList<INDArray> prediction = Predict.predict(LoadersFile.loadNetwork(it), predictData.get(), (60 * 15));
-        final String csv = INDArrays.toMatrix().<List<String>>andThen(CSV.matrixToCSV).<String>andThen(CSV.joinAsLines).apply(prediction);
-        String _name = it.getName();
-        String _plus = ("data/predict-csv/" + _name);
-        String _plus_1 = (_plus + ".csv");
-        Path _get = Paths.get(_plus_1);
-        String _plus_2 = ("Wrote to " + _get);
-        Vor.log.info(_plus_2);
-        String _name_1 = it.getName();
-        String _plus_3 = ("data/predict-csv/" + _name_1);
-        String _plus_4 = (_plus_3 + ".csv");
-        Files.write(Paths.get(_plus_4), csv.getBytes());
-      } catch (Throwable _e) {
-        throw Exceptions.sneakyThrow(_e);
+    final Consumer<File> _function = new Consumer<File>() {
+      @Override
+      public void accept(final File it) {
+        try {
+          final ArrayList<INDArray> prediction = Predict.predict(LoadersFile.loadNetwork(it), predictData.get(), (60 * 15));
+          final String csv = INDArrays.toMatrix().<List<String>>andThen(CSV.matrixToCSV).<String>andThen(CSV.joinAsLines).apply(prediction);
+          String _name = it.getName();
+          String _plus = ("data/predict-csv/" + _name);
+          String _plus_1 = (_plus + ".csv");
+          Path _get = Paths.get(_plus_1);
+          String _plus_2 = ("Wrote to " + _get);
+          Vor.log.info(_plus_2);
+          String _name_1 = it.getName();
+          String _plus_3 = ("data/predict-csv/" + _name_1);
+          String _plus_4 = (_plus_3 + ".csv");
+          Files.write(Paths.get(_plus_4), csv.getBytes());
+        } catch (Throwable _e) {
+          throw Exceptions.sneakyThrow(_e);
+        }
       }
     };
     ((List<File>)Conversions.doWrapArray(new File("data/predict").listFiles())).forEach(_function);
