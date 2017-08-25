@@ -3,85 +3,33 @@ package com.sirolf2009.yggdrasil.kvasir
 import com.sirolf2009.yggdrasil.freyr.Arguments
 import com.sirolf2009.yggdrasil.freyr.SupplierOrderbookLive
 import com.sirolf2009.yggdrasil.freyr.model.TableOrderbook
-import com.sirolf2009.yggdrasil.sif.transmutation.OrderbookNormaliseDiffStdDev
-import grafica.GPlot
-import grafica.GPoint
-import grafica.GPointsArray
 import java.time.Duration
 import java.util.Optional
 import java.util.function.Supplier
-import java.util.stream.Collectors
-import java.util.stream.IntStream
-import java.util.stream.Stream
 import org.knowm.xchange.currency.CurrencyPair
 import org.knowm.xchange.gdax.GDAXExchange
-import processing.core.PApplet
-import tech.tablesaw.api.DoubleColumn
 
-class SketchOrderbookLive extends PApplet {
+class SketchOrderbookLive extends SketchOrderbook {
 
 	static val take = 15
 	val Supplier<Optional<TableOrderbook>> supplier
-	var GPlot orderbook
 
-	new(Supplier<Optional<TableOrderbook>> supplier) {
+	new(TableOrderbook data, Supplier<Optional<TableOrderbook>> supplier) {
+		super(data)
 		this.supplier = supplier
-	}
-
-	override settings() {
-		size(1024, 800)
-	}
-
-	override setup() {
-		orderbook = new GPlot(this)
-		orderbook.points = new GPointsArray((0 ..< take * 2).toList().stream().flatMap[Stream.of(new GPoint(it * 2, 0, "price_" + it))].collect(Collectors.toList()))
-		orderbook.title.text = "Orderbook"
-		orderbook.startHistograms(GPlot.HORIZONTAL)
-		orderbook.drawHistLabels = true
-		orderbook.setDim(900, 700)
-		orderbook.getHistogram().setBgColors(
-			Stream.concat(IntStream.range(0, 15).map[color(0, 255, 0, 200)].boxed, IntStream.range(0, 15).map[color(255, 0, 0, 200)].boxed).collect(Collectors.toList())
-		)
-	}
-
-	override draw() {
-		background(255)
-		if(orderbook.points.NPoints == 0) {
-			println("getting data")
-			val data = supplier.get()
-			data.ifPresent [
-				println("normalising")
-				new OrderbookNormaliseDiffStdDev().accept(it)
-				println("mapping")
-				orderbook.points.NPoints = 0
-				columns.stream.skip(1).collect(Collectors.toList()).forEach [ it, index |
-					if(name.contains("price")) {
-						val value = Math.abs((it as DoubleColumn).get(0).floatValue())
-						if(index < 30) {
-							val point = new GPoint(value, (15 - index / 2), name)
-							orderbook.setPoint(15 - index / 2, point)
-						} else {
-							val point = new GPoint(value, index / 2, name)
-							orderbook.setPoint(index / 2, point)
-						}
-					}
+		new Thread [
+			while(true) {
+				val newData = supplier.get()
+				newData.ifPresent [
+					this.data = it
+					updateGraph()
 				]
-			]
-		}
-		println("drawing")
-		orderbook => [
-			beginDraw()
-			drawBackground()
-			drawBox()
-			drawYAxis()
-			drawTitle()
-			drawHistograms()
-			endDraw()
-		]
+			}
+		].start()
 	}
 
 	def static create(Supplier<Optional<TableOrderbook>> supplier) {
-		runSketch(#[SketchOrderbookLive.name], new SketchOrderbookLive(supplier));
+		runSketch(#[SketchOrderbookLive.name], new SketchOrderbookLive(supplier.first, supplier));
 	}
 
 	def static void main(String[] args) {

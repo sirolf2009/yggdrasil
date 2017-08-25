@@ -20,7 +20,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors class SketchOrderbook extends PApplet {
 
-	val TableOrderbook data
+	var TableOrderbook data
 	var GPlot orderbook
 
 	new(TableOrderbook data) {
@@ -51,7 +51,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 		drawGraph()
 	}
 	
-	def drawGraph() {
+	def synchronized drawGraph() {
 		orderbook => [
 			beginDraw()
 			drawBackground()
@@ -64,7 +64,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 		]
 	}
 	
-	def updateGraph() {
+	def synchronized updateGraph() {
 		data.bidPrices.reverse.forEach [ it, index |
 			val value = get(0).floatValue()
 			val point = new GPoint(value, index, name)
