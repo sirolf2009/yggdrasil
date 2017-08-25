@@ -69,6 +69,7 @@ class TestTableExtensions {
 	def void testRow() {
 		val data = TestData.orderbookRows
 		val sliced = data.row(0)
+		println(sliced.toString().trim())
 		Assert.assertEquals(FileUtils.readFileToString(new File("src/test/resources/TestTableExtensions/TestRow")).trim(), sliced.toString().trim())
 	}
 	
