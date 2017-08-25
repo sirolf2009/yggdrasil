@@ -70,10 +70,7 @@ import java.util.function.Function
 			Files.write(labelsPath, data.get(it + numberOfTimesteps).concat("\n").bytes, StandardOpenOption.APPEND, StandardOpenOption.CREATE)
 		]
 
-		val trainingArray = createIndArrayFromStringList(data, numOfVariables, 0, trainSize)
-		val testingArray = createIndArrayFromStringList(data, numOfVariables, trainSize, numberOfTimesteps)
-
-		return new DataFormat(trainSize, numberOfTimesteps, numberOfTimesteps, numOfVariables, miniBatchSize, trainingArray, testingArray, baseDir, featuresDirTrain, labelsDirTrain, featuresDirTest, labelsDirTest)
+		return new DataFormat(trainSize, numberOfTimesteps, numberOfTimesteps, numOfVariables, miniBatchSize, baseDir, featuresDirTrain, labelsDirTrain, featuresDirTest, labelsDirTest)
 	}
 
 	def static createDataSet(List<String> orders, int numberOfTimesteps) throws Exception {

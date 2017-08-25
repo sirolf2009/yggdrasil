@@ -1,6 +1,8 @@
 package com.sirolf2009.yggdrasil.vor;
 
 import com.beust.jcommander.JCommander;
+import com.sirolf2009.yggdrasil.freyr.TestData;
+import com.sirolf2009.yggdrasil.freyr.model.TableOrderbook;
 import com.sirolf2009.yggdrasil.sif.TrainingData;
 import com.sirolf2009.yggdrasil.sif.loader.LoadersFile;
 import com.sirolf2009.yggdrasil.sif.saver.SaversFile;
@@ -10,7 +12,7 @@ import com.sirolf2009.yggdrasil.vor.Predict;
 import com.sirolf2009.yggdrasil.vor.RNN;
 import com.sirolf2009.yggdrasil.vor.data.Arguments;
 import com.sirolf2009.yggdrasil.vor.data.DataFormat;
-import com.sirolf2009.yggdrasil.vor.data.PrepareData;
+import com.sirolf2009.yggdrasil.vor.data.PrepareOrderbook;
 import com.sirolf2009.yggdrasil.vor.data.TrainAndTestData;
 import java.io.File;
 import java.nio.file.Files;
@@ -66,13 +68,11 @@ public class Vor {
       if (_greaterThan_1) {
         throw new IllegalStateException("The prediction folder is not empty!");
       }
-      File _file = new File("data/orderbook");
-      TrainingData.readDataLargeToCSV(_file);
-      List<String> _readAllLines = Files.readAllLines(new File("data/orderbook.csv").toPath());
+      TableOrderbook _orderbookRows = TestData.getOrderbookRows();
       int _steps = arguments.getSteps();
       int _minibatch = arguments.getMinibatch();
       @Extension
-      final DataFormat format = new PrepareData(Vor.baseDir, _readAllLines, _steps, _minibatch).call();
+      final DataFormat format = new PrepareOrderbook(Vor.baseDir, _orderbookRows, _steps, _minibatch).call();
       @Extension
       final TrainAndTestData datasets = Vor.getData(format);
       final MultiLayerNetwork net = new RNN(format).get();
@@ -81,8 +81,8 @@ public class Vor {
       final Consumer<Integer> _function = (Integer it) -> {
         net.fit(datasets.getTrainData());
         datasets.getTrainData().reset();
-        File _file_1 = new File(networkFolder, (("predict_" + it) + ".zip"));
-        new SaversFile.NetToFile(_file_1).accept(net);
+        File _file = new File(networkFolder, (("predict_" + it) + ".zip"));
+        new SaversFile.NetToFile(_file).accept(net);
       };
       new ExclusiveRange(0, epochs, true).forEach(_function);
     } catch (Throwable _e) {
@@ -139,7 +139,7 @@ public class Vor {
   
   public static TrainAndTestData getData(@Extension final DataFormat format) {
     try {
-      final CSVSequenceRecordReader trainFeatures = new CSVSequenceRecordReader();
+      final CSVSequenceRecordReader trainFeatures = new CSVSequenceRecordReader(1);
       StringConcatenation _builder = new StringConcatenation();
       String _absolutePath = format.getFeaturesDirTrain().getAbsolutePath();
       _builder.append(_absolutePath);
@@ -148,7 +148,7 @@ public class Vor {
       int _minus = (_trainSize - 1);
       NumberedFileInputSplit _numberedFileInputSplit = new NumberedFileInputSplit(_builder.toString(), 0, _minus);
       trainFeatures.initialize(_numberedFileInputSplit);
-      final CSVSequenceRecordReader trainLabels = new CSVSequenceRecordReader();
+      final CSVSequenceRecordReader trainLabels = new CSVSequenceRecordReader(1);
       StringConcatenation _builder_1 = new StringConcatenation();
       String _absolutePath_1 = format.getLabelsDirTrain().getAbsolutePath();
       _builder_1.append(_absolutePath_1);
@@ -159,7 +159,7 @@ public class Vor {
       trainLabels.initialize(_numberedFileInputSplit_1);
       int _miniBatchSize = format.getMiniBatchSize();
       final SequenceRecordReaderDataSetIterator trainData = new SequenceRecordReaderDataSetIterator(trainFeatures, trainLabels, _miniBatchSize, (-1), true, SequenceRecordReaderDataSetIterator.AlignmentMode.ALIGN_END);
-      final CSVSequenceRecordReader testFeatures = new CSVSequenceRecordReader();
+      final CSVSequenceRecordReader testFeatures = new CSVSequenceRecordReader(1);
       StringConcatenation _builder_2 = new StringConcatenation();
       String _absolutePath_2 = format.getFeaturesDirTest().getAbsolutePath();
       _builder_2.append(_absolutePath_2);
@@ -170,7 +170,7 @@ public class Vor {
       int _plus = (_trainSize_3 + _testSize);
       NumberedFileInputSplit _numberedFileInputSplit_2 = new NumberedFileInputSplit(_builder_2.toString(), _trainSize_2, _plus);
       testFeatures.initialize(_numberedFileInputSplit_2);
-      final CSVSequenceRecordReader testLabels = new CSVSequenceRecordReader();
+      final CSVSequenceRecordReader testLabels = new CSVSequenceRecordReader(1);
       StringConcatenation _builder_3 = new StringConcatenation();
       String _absolutePath_3 = format.getLabelsDirTest().getAbsolutePath();
       _builder_3.append(_absolutePath_3);

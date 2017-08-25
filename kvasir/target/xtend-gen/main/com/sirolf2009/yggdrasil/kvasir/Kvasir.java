@@ -79,17 +79,11 @@ public class Kvasir {
           String _absolutePath = file.getAbsolutePath();
           throw new FileNotFoundException(_absolutePath);
         }
-        final Comparator<File> _function = new Comparator<File>() {
-          @Override
-          public int compare(final File a, final File b) {
-            return a.getName().compareTo(b.getName());
-          }
+        final Comparator<File> _function = (File a, File b) -> {
+          return a.getName().compareTo(b.getName());
         };
-        final Function1<File, XYChart> _function_1 = new Function1<File, XYChart>() {
-          @Override
-          public XYChart apply(final File it) {
-            return Kvasir.getChart(it, series);
-          }
+        final Function1<File, XYChart> _function_1 = (File it) -> {
+          return Kvasir.getChart(it, series);
         };
         List<XYChart> _map = ListExtensions.<File, XYChart>map(ListExtensions.<File>sortInplace(((List<File>)Conversions.doWrapArray(file.listFiles())), _function), _function_1);
         _xblockexpression = new SwingWrapper<XYChart>(_map).displayChartMatrix();
@@ -105,38 +99,26 @@ public class Kvasir {
       final FileReader reader = new FileReader(file);
       final CSVParser records = CSVFormat.EXCEL.parse(reader);
       final HashMap<String, Pair<List<Integer>, List<Double>>> seriesMap = new HashMap<String, Pair<List<Integer>, List<Double>>>();
-      final Consumer<Pair<String, Integer>> _function = new Consumer<Pair<String, Integer>>() {
-        @Override
-        public void accept(final Pair<String, Integer> it) {
-          ArrayList<Integer> _arrayList = new ArrayList<Integer>();
-          ArrayList<Double> _arrayList_1 = new ArrayList<Double>();
-          Pair<List<Integer>, List<Double>> _mappedTo = Pair.<List<Integer>, List<Double>>of(_arrayList, _arrayList_1);
-          seriesMap.put(it.getKey(), _mappedTo);
-        }
+      final Consumer<Pair<String, Integer>> _function = (Pair<String, Integer> it) -> {
+        ArrayList<Integer> _arrayList = new ArrayList<Integer>();
+        ArrayList<Double> _arrayList_1 = new ArrayList<Double>();
+        Pair<List<Integer>, List<Double>> _mappedTo = Pair.<List<Integer>, List<Double>>of(_arrayList, _arrayList_1);
+        seriesMap.put(it.getKey(), _mappedTo);
       };
       series.forEach(_function);
-      final Procedure2<CSVRecord, Integer> _function_1 = new Procedure2<CSVRecord, Integer>() {
-        @Override
-        public void apply(final CSVRecord record, final Integer index) {
-          final Consumer<Pair<String, Integer>> _function = new Consumer<Pair<String, Integer>>() {
-            @Override
-            public void accept(final Pair<String, Integer> it) {
-              seriesMap.get(it.getKey()).getKey().add(index);
-              seriesMap.get(it.getKey()).getValue().add(Double.valueOf(Double.parseDouble(record.get((it.getValue()).intValue()))));
-            }
-          };
-          series.forEach(_function);
-        }
+      final Procedure2<CSVRecord, Integer> _function_1 = (CSVRecord record, Integer index) -> {
+        final Consumer<Pair<String, Integer>> _function_2 = (Pair<String, Integer> it) -> {
+          seriesMap.get(it.getKey()).getKey().add(index);
+          seriesMap.get(it.getKey()).getValue().add(Double.valueOf(Double.parseDouble(record.get((it.getValue()).intValue()))));
+        };
+        series.forEach(_function_2);
       };
       IterableExtensions.<CSVRecord>forEach(records, _function_1);
       final XYChart chart = new XYChartBuilder().width(600).height(400).title(file.getName()).xAxisTitle("X").yAxisTitle("Y").build();
       chart.getStyler().setDefaultSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Line);
-      final Consumer<Map.Entry<String, Pair<List<Integer>, List<Double>>>> _function_2 = new Consumer<Map.Entry<String, Pair<List<Integer>, List<Double>>>>() {
-        @Override
-        public void accept(final Map.Entry<String, Pair<List<Integer>, List<Double>>> it) {
-          final XYSeries added = chart.addSeries(it.getKey(), it.getValue().getKey(), it.getValue().getValue());
-          added.setMarker(SeriesMarkers.NONE);
-        }
+      final Consumer<Map.Entry<String, Pair<List<Integer>, List<Double>>>> _function_2 = (Map.Entry<String, Pair<List<Integer>, List<Double>>> it) -> {
+        final XYSeries added = chart.addSeries(it.getKey(), it.getValue().getKey(), it.getValue().getValue());
+        added.setMarker(SeriesMarkers.NONE);
       };
       seriesMap.entrySet().forEach(_function_2);
       return chart;

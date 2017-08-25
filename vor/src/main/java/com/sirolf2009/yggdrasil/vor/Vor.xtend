@@ -8,7 +8,6 @@ import com.sirolf2009.yggdrasil.sif.transmutation.CSV
 import com.sirolf2009.yggdrasil.sif.transmutation.INDArrays
 import com.sirolf2009.yggdrasil.vor.data.Arguments
 import com.sirolf2009.yggdrasil.vor.data.DataFormat
-import com.sirolf2009.yggdrasil.vor.data.PrepareData
 import com.sirolf2009.yggdrasil.vor.data.TrainAndTestData
 import java.io.File
 import java.nio.file.Files
@@ -21,6 +20,8 @@ import org.deeplearning4j.datasets.datavec.SequenceRecordReaderDataSetIterator.A
 import org.deeplearning4j.eval.RegressionEvaluation
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator
+import com.sirolf2009.yggdrasil.vor.data.PrepareOrderbook
+import com.sirolf2009.yggdrasil.freyr.TestData
 
 class Vor {
 
@@ -46,8 +47,9 @@ class Vor {
 		if(predictionFolder.list.size > 0) {
 			throw new IllegalStateException("The prediction folder is not empty!")
 		}
-		TrainingData.readDataLargeToCSV(new File("data/orderbook"))
-		extension val format = new PrepareData(baseDir, Files.readAllLines(new File("data/orderbook.csv").toPath()), steps, minibatch).call()
+//		TrainingData.readDataLargeToCSV(new File("data/orderbook"))
+//		extension val format = new PrepareData(baseDir, Files.readAllLines(new File("data/orderbook.csv").toPath()), steps, minibatch).call()
+		extension val format = new PrepareOrderbook(baseDir, TestData.orderbookRows, steps, minibatch).call()
 		extension val datasets = getData(format)
 //		val predictData = TrainingData.getPredictData('''http://«influxHost»:«influxPort»''', 60*15)
 //		val predictData = TrainingData.readPredictDataLarge(new File("data/orderbook"))
@@ -87,15 +89,15 @@ class Vor {
 	}
 
 	def static getData(extension DataFormat format) {
-		val trainFeatures = new CSVSequenceRecordReader()
+		val trainFeatures = new CSVSequenceRecordReader(1)
 		trainFeatures.initialize(new NumberedFileInputSplit('''«featuresDirTrain.absolutePath»/train_%d.csv''', 0, trainSize - 1))
-		val trainLabels = new CSVSequenceRecordReader()
+		val trainLabels = new CSVSequenceRecordReader(1)
 		trainLabels.initialize(new NumberedFileInputSplit('''«labelsDirTrain.absolutePath»/train_%d.csv''', 0, trainSize - 1))
 		val trainData = new SequenceRecordReaderDataSetIterator(trainFeatures, trainLabels, miniBatchSize, -1, true, AlignmentMode.ALIGN_END)
 
-		val testFeatures = new CSVSequenceRecordReader()
+		val testFeatures = new CSVSequenceRecordReader(1)
 		testFeatures.initialize(new NumberedFileInputSplit('''«featuresDirTest.absolutePath»/test_%d.csv''', trainSize, trainSize + testSize))
-		val testLabels = new CSVSequenceRecordReader()
+		val testLabels = new CSVSequenceRecordReader(1)
 		testLabels.initialize(new NumberedFileInputSplit('''«labelsDirTest.absolutePath»/test_%d.csv''', trainSize, trainSize + testSize))
 		val testData = new SequenceRecordReaderDataSetIterator(testFeatures, testLabels, miniBatchSize, -1, true, AlignmentMode.ALIGN_END)
 

@@ -53,6 +53,10 @@ class TableOrderbook extends Table {
 		return (33 ..< 63).filter[it % 2 == 0].map[column(it) as DoubleColumn].toList() //amounts are even indices
 	}
 	
+	override TableOrderbook fullCopy() {
+      return new TableOrderbook(super.fullCopy())
+	}
+	
 	def private static validOrThrow(Table table) {
 		return table.columns.validOrThrow()
 	}

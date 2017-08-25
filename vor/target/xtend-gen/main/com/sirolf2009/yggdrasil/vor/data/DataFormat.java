@@ -4,7 +4,6 @@ import java.io.File;
 import org.eclipse.xtend.lib.annotations.Data;
 import org.eclipse.xtext.xbase.lib.Pure;
 import org.eclipse.xtext.xbase.lib.util.ToStringBuilder;
-import org.nd4j.linalg.api.ndarray.INDArray;
 
 @Data
 @SuppressWarnings("all")
@@ -19,10 +18,6 @@ public class DataFormat {
   
   private final int miniBatchSize;
   
-  private final INDArray trainingArray;
-  
-  private final INDArray testingArray;
-  
   private final File baseDir;
   
   private final File featuresDirTrain;
@@ -33,15 +28,13 @@ public class DataFormat {
   
   private final File labelsDirTest;
   
-  public DataFormat(final int trainSize, final int testSize, final int numberOfTimesteps, final int numOfVariables, final int miniBatchSize, final INDArray trainingArray, final INDArray testingArray, final File baseDir, final File featuresDirTrain, final File labelsDirTrain, final File featuresDirTest, final File labelsDirTest) {
+  public DataFormat(final int trainSize, final int testSize, final int numberOfTimesteps, final int numOfVariables, final int miniBatchSize, final File baseDir, final File featuresDirTrain, final File labelsDirTrain, final File featuresDirTest, final File labelsDirTest) {
     super();
     this.trainSize = trainSize;
     this.testSize = testSize;
     this.numberOfTimesteps = numberOfTimesteps;
     this.numOfVariables = numOfVariables;
     this.miniBatchSize = miniBatchSize;
-    this.trainingArray = trainingArray;
-    this.testingArray = testingArray;
     this.baseDir = baseDir;
     this.featuresDirTrain = featuresDirTrain;
     this.labelsDirTrain = labelsDirTrain;
@@ -59,8 +52,6 @@ public class DataFormat {
     result = prime * result + this.numberOfTimesteps;
     result = prime * result + this.numOfVariables;
     result = prime * result + this.miniBatchSize;
-    result = prime * result + ((this.trainingArray== null) ? 0 : this.trainingArray.hashCode());
-    result = prime * result + ((this.testingArray== null) ? 0 : this.testingArray.hashCode());
     result = prime * result + ((this.baseDir== null) ? 0 : this.baseDir.hashCode());
     result = prime * result + ((this.featuresDirTrain== null) ? 0 : this.featuresDirTrain.hashCode());
     result = prime * result + ((this.labelsDirTrain== null) ? 0 : this.labelsDirTrain.hashCode());
@@ -88,16 +79,6 @@ public class DataFormat {
     if (other.numOfVariables != this.numOfVariables)
       return false;
     if (other.miniBatchSize != this.miniBatchSize)
-      return false;
-    if (this.trainingArray == null) {
-      if (other.trainingArray != null)
-        return false;
-    } else if (!this.trainingArray.equals(other.trainingArray))
-      return false;
-    if (this.testingArray == null) {
-      if (other.testingArray != null)
-        return false;
-    } else if (!this.testingArray.equals(other.testingArray))
       return false;
     if (this.baseDir == null) {
       if (other.baseDir != null)
@@ -136,8 +117,6 @@ public class DataFormat {
     b.add("numberOfTimesteps", this.numberOfTimesteps);
     b.add("numOfVariables", this.numOfVariables);
     b.add("miniBatchSize", this.miniBatchSize);
-    b.add("trainingArray", this.trainingArray);
-    b.add("testingArray", this.testingArray);
     b.add("baseDir", this.baseDir);
     b.add("featuresDirTrain", this.featuresDirTrain);
     b.add("labelsDirTrain", this.labelsDirTrain);
@@ -169,16 +148,6 @@ public class DataFormat {
   @Pure
   public int getMiniBatchSize() {
     return this.miniBatchSize;
-  }
-  
-  @Pure
-  public INDArray getTrainingArray() {
-    return this.trainingArray;
-  }
-  
-  @Pure
-  public INDArray getTestingArray() {
-    return this.testingArray;
   }
   
   @Pure

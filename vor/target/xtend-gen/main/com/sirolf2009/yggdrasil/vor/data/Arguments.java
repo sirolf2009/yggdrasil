@@ -31,10 +31,10 @@ public class Arguments {
   private int datapointsPrediction = 5000;
   
   @Parameter(names = "-s", description = "The amount of steps to use before making a prediction")
-  private int steps = 60;
+  private int steps = 2;
   
   @Parameter(names = "-mb", description = "The size of the mini batches")
-  private int minibatch = 5;
+  private int minibatch = 1;
   
   @Pure
   public String getInfluxHost() {
