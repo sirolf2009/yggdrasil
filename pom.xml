@@ -170,12 +170,12 @@
 			<dependency>
 				<groupId>tech.tablesaw</groupId>
 				<artifactId>tablesaw-core</artifactId>
-				<version>0.8.1-SNAPSHOT</version>
+				<version>0.9.0</version>
 			</dependency>
 			<dependency>
 				<groupId>tech.tablesaw</groupId>
 				<artifactId>tablesaw-plot</artifactId>
-				<version>0.8.1-SNAPSHOT</version>
+				<version>0.9.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.processing</groupId>

@@ -28,32 +28,26 @@ public class RNN implements Supplier<MultiLayerNetwork> {
   @Override
   public MultiLayerNetwork get() {
     NeuralNetConfiguration.Builder _builder = new NeuralNetConfiguration.Builder();
-    final Procedure1<NeuralNetConfiguration.Builder> _function = new Procedure1<NeuralNetConfiguration.Builder>() {
-      @Override
-      public void apply(final NeuralNetConfiguration.Builder it) {
-        it.setOptimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT);
-        it.iterations(1);
-        it.setWeightInit(WeightInit.XAVIER);
-        it.setUpdater(Updater.NESTEROVS);
-        it.setLearningRate(0.1);
-        it.l2(0.001);
-        it.setUseRegularization(true);
-      }
+    final Procedure1<NeuralNetConfiguration.Builder> _function = (NeuralNetConfiguration.Builder it) -> {
+      it.setOptimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT);
+      it.iterations(1);
+      it.setWeightInit(WeightInit.XAVIER);
+      it.setUpdater(Updater.NESTEROVS);
+      it.setLearningRate(0.1);
+      it.l2(0.001);
+      it.setUseRegularization(true);
     };
     final NeuralNetConfiguration.Builder builder = ObjectExtensions.<NeuralNetConfiguration.Builder>operator_doubleArrow(_builder, _function);
     NeuralNetConfiguration.ListBuilder _list = builder.list();
-    final Procedure1<NeuralNetConfiguration.ListBuilder> _function_1 = new Procedure1<NeuralNetConfiguration.ListBuilder>() {
-      @Override
-      public void apply(final NeuralNetConfiguration.ListBuilder it) {
-        GravesLSTM.Builder _nIn = new GravesLSTM.Builder().rmsDecay(0.95).activation(Activation.TANH).updater(Updater.RMSPROP).nIn(RNN.this.format.getNumOfVariables());
-        int _numOfVariables = RNN.this.format.getNumOfVariables();
-        int _multiply = (_numOfVariables * 3);
-        it.layer(0, _nIn.nOut(_multiply).build());
-        RnnOutputLayer.Builder _activation = new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE).momentum(0.9).activation(Activation.IDENTITY);
-        int _numOfVariables_1 = RNN.this.format.getNumOfVariables();
-        int _multiply_1 = (_numOfVariables_1 * 3);
-        it.layer(1, _activation.nIn(_multiply_1).nOut(RNN.this.format.getNumOfVariables()).build());
-      }
+    final Procedure1<NeuralNetConfiguration.ListBuilder> _function_1 = (NeuralNetConfiguration.ListBuilder it) -> {
+      GravesLSTM.Builder _nIn = new GravesLSTM.Builder().rmsDecay(0.95).activation(Activation.TANH).updater(Updater.RMSPROP).nIn(this.format.getNumOfVariables());
+      int _numOfVariables = this.format.getNumOfVariables();
+      int _multiply = (_numOfVariables * 3);
+      it.layer(0, _nIn.nOut(_multiply).build());
+      RnnOutputLayer.Builder _activation = new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE).momentum(0.9).activation(Activation.IDENTITY);
+      int _numOfVariables_1 = this.format.getNumOfVariables();
+      int _multiply_1 = (_numOfVariables_1 * 3);
+      it.layer(1, _activation.nIn(_multiply_1).nOut(this.format.getNumOfVariables()).build());
     };
     final NeuralNetConfiguration.ListBuilder config = ObjectExtensions.<NeuralNetConfiguration.ListBuilder>operator_doubleArrow(_list, _function_1);
     MultiLayerConfiguration _build = config.build();
