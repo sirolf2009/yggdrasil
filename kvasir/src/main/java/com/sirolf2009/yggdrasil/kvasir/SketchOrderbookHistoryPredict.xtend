@@ -93,7 +93,7 @@ class SketchOrderbookHistoryPredict extends PApplet {
 		cp5 = new ControlP5(this)
 		sliderZoom = cp5.addSlider("zoom").setPosition(40, 770).setRange(1, 60 * 15).setWidth(950).setHeight(20).setColor(color).setValue(60).setLabelVisible(true)
 
-		font = createFont("Arial", 16, true);
+		font = createFont("Arial", 16, true)
 
 		frameRate(1)
 	}
@@ -151,7 +151,7 @@ class SketchOrderbookHistoryPredict extends PApplet {
 			if(hasNaN.get) {
 				textFont(font, 16)
 				fill(0) 
-				text("NaN issues!", 450, 340); // STEP 5 Display Text
+				text("NaN issues!", 450, 340)
 			}
 		}
 	}
