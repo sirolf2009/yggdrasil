@@ -13,8 +13,12 @@ class OrderbookNormaliseDiffStdDev implements Consumer<TableOrderbook> {
 		val lastColumn = getLast()
 		Arrays.stream(rows).forEach [
 			val lastPrice = lastColumn.get(it)
+			if(it > 0) {
+				lastColumn.set(it, lastPrice-lastColumn.get(it-1))
+			} else {
+				lastColumn.set(it, 0d)
+			}
 			priceColumns.forEach[column|
-				println("lastPrice: "+lastPrice+" "+column.name+": "+column.get(it) +" -> "+percentualDifference(column.get(it), lastPrice))
 				column.set(it, percentualDifference(column.get(it), lastPrice))
 			]
 			

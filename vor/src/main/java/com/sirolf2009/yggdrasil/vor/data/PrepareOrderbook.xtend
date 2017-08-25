@@ -5,8 +5,8 @@ import java.io.File
 import java.nio.file.Paths
 import org.apache.logging.log4j.LogManager
 import org.eclipse.xtend.lib.annotations.Data
-import tech.tablesaw.util.BitmapBackedSelection
 
+import static extension com.sirolf2009.yggdrasil.sif.TableExtensions.*
 import static extension org.apache.commons.io.FileUtils.*
 
 @Data public class PrepareOrderbook {
@@ -46,38 +46,26 @@ import static extension org.apache.commons.io.FileUtils.*
 		(0 .. trainSize).toList.parallelStream.forEach [
 			val featuresPath = Paths.get('''«featuresDirTrain.absolutePath»/train_«it».csv''')
 			val labelsPath = Paths.get('''«labelsDirTrain.absolutePath»/train_«it».csv''')
-			val set = data.selectWhere(range(it, it+numberOfTimesteps))
+			val set = data.rows(it, it+numberOfTimesteps)
 			set.removeColumns("datetime")
-			set.exportToCsv(featuresPath.toString());
+			set.write().csv(featuresPath.toString());
 			val outcome = data.selectWhere(index(it+numberOfTimesteps))
 			outcome.removeColumns("datetime")
-			outcome.exportToCsv(labelsPath.toString());
+			set.write().csv(labelsPath.toString());
 		]
 
 		(trainSize .. (numberOfTimesteps + trainSize)).toList.parallelStream.forEach [
 			val featuresPath = Paths.get('''«featuresDirTest.absolutePath»/test_«it».csv''')
 			val labelsPath = Paths.get('''«labelsDirTest.absolutePath»/test_«it».csv''')
-			val set = data.selectWhere(range(it, it+numberOfTimesteps))
+			val set = data.rows(it, it+numberOfTimesteps)
 			set.removeColumns("datetime")
-			set.exportToCsv(featuresPath.toString());
+			set.write().csv(featuresPath.toString());
 			val outcome = data.selectWhere(index(it+numberOfTimesteps))
 			outcome.removeColumns("datetime")
-			outcome.exportToCsv(labelsPath.toString());
+			set.write().csv(labelsPath.toString());
 		]
 
 		return new DataFormat(trainSize, numberOfTimesteps, numberOfTimesteps, data.columnCount-1, miniBatchSize, baseDir, featuresDirTrain, labelsDirTrain, featuresDirTest, labelsDirTest)
-	}
-	
-	def static index(int index) {
-		val selection = new BitmapBackedSelection()
-		selection.add(index)
-		return selection
-	}
-	
-	def static range(int from, int to) {
-		val selection = new BitmapBackedSelection()
-		selection.addRange(from, to)
-		return selection
 	}
 
 	def static clean(File folder) {

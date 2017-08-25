@@ -52,8 +52,10 @@ class SupplierOrderbookLive implements Supplier<Optional<TableOrderbook>> {
 			val last = new DoubleColumn("last", new DoubleArrayList(#[newTrades.stream().sorted[a, b|b.timestamp.compareTo(a.timestamp)].findFirst.map[price.doubleValue].orElse(lastPriceReference.get())]))
 			val bought = new DoubleColumn("bought", new DoubleArrayList(#[newTrades.stream().filter[type.equals(OrderType.BID)].map[tradableAmount].reduce[a, b|a.add(b)].map[doubleValue].orElse(0d)]))
 			val sold = new DoubleColumn("sold", new DoubleArrayList(#[newTrades.stream().filter[type.equals(OrderType.ASK)].map[tradableAmount].reduce[a, b|a.add(b)].map[doubleValue].orElse(0d)]))
-			result = Optional.of(orderbook.parseOrderbook(last, bought, sold))
-			lastPriceReference.set(last.getDouble(0))
+			if(last.getDouble(0) != -1) {
+				result = Optional.of(orderbook.parseOrderbook(last, bought, sold))
+				lastPriceReference.set(last.getDouble(0))
+			}
 		}
 		lastIDReference.set(trades.getlastID)
 		return result
