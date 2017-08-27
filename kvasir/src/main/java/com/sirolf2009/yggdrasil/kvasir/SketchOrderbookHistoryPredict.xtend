@@ -3,9 +3,9 @@ package com.sirolf2009.yggdrasil.kvasir
 import com.sirolf2009.yggdrasil.freyr.Arguments
 import com.sirolf2009.yggdrasil.freyr.SupplierOrderbookLive
 import com.sirolf2009.yggdrasil.freyr.model.TableOrderbook
+import com.sirolf2009.yggdrasil.sif.loader.LoadersFile
 import com.sirolf2009.yggdrasil.sif.transmutation.OrderbookNormaliseDiffStdDev
 import com.sirolf2009.yggdrasil.vor.Predict
-import com.sirolf2009.yggdrasil.vor.RNN
 import controlP5.ControlP5
 import controlP5.ControlP5Constants
 import controlP5.Slider
@@ -14,6 +14,7 @@ import grafica.GPoint
 import grafica.GPointsArray
 import java.time.Duration
 import java.util.Optional
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Supplier
 import java.util.stream.Collectors
 import java.util.stream.IntStream
@@ -23,11 +24,10 @@ import org.knowm.xchange.currency.CurrencyPair
 import org.knowm.xchange.gdax.GDAXExchange
 import org.nd4j.linalg.factory.Nd4j
 import processing.core.PApplet
+import processing.core.PFont
 import tech.tablesaw.api.DoubleColumn
 
 import static extension com.sirolf2009.yggdrasil.sif.TableExtensions.*
-import java.util.concurrent.atomic.AtomicBoolean
-import processing.core.PFont
 
 class SketchOrderbookHistoryPredict extends PApplet {
 
@@ -150,8 +150,8 @@ class SketchOrderbookHistoryPredict extends PApplet {
 			]
 			if(hasNaN.get) {
 				textFont(font, 16)
-				fill(0) 
-				text("NaN issues!", 450, 340)
+				fill(255, 0, 0) 
+				text("NaN issues!", 700, 340)
 			}
 		}
 	}
@@ -174,7 +174,7 @@ class SketchOrderbookHistoryPredict extends PApplet {
 	def static void main(String[] args) {
 		val take = 15
 		val supplier = new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take)
-		create(supplier.first, supplier.normalised, take, new RNN(63).get(), 2)
+		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("../vor/data/predict-net/predict_6.zip"), 2)
 	}
 
 	def static getFirst(Supplier<Optional<TableOrderbook>> supplier) {

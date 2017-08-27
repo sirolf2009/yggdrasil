@@ -17,10 +17,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.knowm.xchange</groupId>
-			<artifactId>xchange-bitfinex</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.knowm.xchange</groupId>
 			<artifactId>xchange-gdax</artifactId>
 		</dependency>
 		<dependency>
@@ -28,12 +24,16 @@
 			<artifactId>jcommander</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.influxdb</groupId>
-			<artifactId>influxdb-java</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>tech.tablesaw</groupId>
 			<artifactId>tablesaw-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.datastax.cassandra</groupId>
+			<artifactId>cassandra-driver-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.datastax.cassandra</groupId>
+			<artifactId>cassandra-driver-mapping</artifactId>
 		</dependency>
 	</dependencies>
 

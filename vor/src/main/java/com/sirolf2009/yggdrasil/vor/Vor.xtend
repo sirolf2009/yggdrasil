@@ -1,7 +1,8 @@
 package com.sirolf2009.yggdrasil.vor
 
 import com.beust.jcommander.JCommander
-import com.sirolf2009.yggdrasil.freyr.TestData
+import com.datastax.driver.core.Cluster
+import com.sirolf2009.yggdrasil.sif.loader.LoadersDatabase
 import com.sirolf2009.yggdrasil.sif.saver.SaversFile.NetToFile
 import com.sirolf2009.yggdrasil.vor.data.Arguments
 import com.sirolf2009.yggdrasil.vor.data.DataFormat
@@ -16,6 +17,7 @@ import org.deeplearning4j.datasets.datavec.SequenceRecordReaderDataSetIterator.A
 import org.deeplearning4j.eval.RegressionEvaluation
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator
+import com.sirolf2009.yggdrasil.sif.transmutation.OrderbookNormaliseDiffStdDev
 
 class Vor {
 
@@ -41,12 +43,13 @@ class Vor {
 		if(predictionFolder.list.size > 0) {
 			throw new IllegalStateException("The prediction folder is not empty!")
 		}
-//		TrainingData.readDataLargeToCSV(new File("data/orderbook"))
-//		extension val format = new PrepareData(baseDir, Files.readAllLines(new File("data/orderbook.csv").toPath()), steps, minibatch).call()
-		extension val format = new PrepareOrderbook(baseDir, TestData.orderbookRows, steps, minibatch).call()
+
+		val session = Cluster.builder.addContactPoint("freyr").build().connect()
+		val data = LoadersDatabase.getOrderbook(session, 1000)
+		session.close()
+		new OrderbookNormaliseDiffStdDev().accept(data)
+		extension val format = new PrepareOrderbook(baseDir, data, steps, minibatch).call()
 		extension val datasets = getData(format)
-//		val predictData = TrainingData.getPredictData('''http://«influxHost»:«influxPort»''', 60*15)
-//		val predictData = TrainingData.readPredictDataLarge(new File("data/orderbook"))
 		val net = new RNN(numOfVariables).get()
 		val epochs = 100
 		log.info("Training...")
@@ -54,8 +57,6 @@ class Vor {
 			net.fit(trainData)
 			trainData.reset()
 			new NetToFile(new File(networkFolder, "predict_" + it + ".zip")).accept(net)
-//			val prediction = INDArrays.toMatrix.andThen(CSV.matrixToCSV).andThen(CSV.joinAsLines).apply(Predict.predict(net, predictData, 60*15))
-//			FileUtils.write(new File(predictionFolder, "predict_" + it + ".csv"), prediction)
 		]
 	}
 

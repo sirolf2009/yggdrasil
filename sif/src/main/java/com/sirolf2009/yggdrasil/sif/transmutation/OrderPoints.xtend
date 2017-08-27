@@ -9,14 +9,16 @@ import org.apache.logging.log4j.LogManager
 import static extension com.sirolf2009.yggdrasil.sif.StreamExtensions.*
 import static java.util.stream.Collectors.*
 
+@Deprecated
 class OrderPoints {
 
 	static val log = LogManager.logger
 	static val bidAskOrder = #["bid", "ask"]
 
+	@Deprecated
 	public static Function<List<OrderPoint>, List<OrderPoint>> normalize = [
 		log.info("Normalizing")
-		//THIS IS BROKEN. I THINK WE'RE GETTING THE RAW UNSORTED LIST. WHICH MEANS THAT 0 AND 30 WILL JUST BE RANDOM LIMIT ORDERS
+		// THIS IS BROKEN. I THINK WE'RE GETTING THE RAW UNSORTED LIST. WHICH MEANS THAT 0 AND 30 WILL JUST BE RANDOM LIMIT ORDERS
 		val maxBid = get(0).value
 		val minAsk = get(30).value
 		val halfPrice = minAsk - maxBid
@@ -28,7 +30,8 @@ class OrderPoints {
 			new OrderPoint(timestamp, side, index, (value - halfPrice) / ((value + halfPrice) / 2), (amount - amountMean) * amountStdDev, bought, sold)
 		].collect()
 	]
-	
+
+	@Deprecated
 	public static Function<List<OrderPoint>, List<List<Double>>> ordersToMatrix = [
 		val log = LogManager.logger
 		log.info("Creating matrix from orders")

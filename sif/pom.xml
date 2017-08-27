@@ -17,10 +17,6 @@
 			<artifactId>nd4j-native-platform</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.influxdb</groupId>
-			<artifactId>influxdb-java</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.deeplearning4j</groupId>
 			<artifactId>deeplearning4j-core</artifactId>
 		</dependency>

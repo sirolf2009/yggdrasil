@@ -9,7 +9,6 @@ import static org.junit.Assert.*
 class TestTableOrderbook {
 	
 	val simple = TestData.orderbookSimple
-	val rows = TestData.orderbookRows
 	
 	@Test
 	def void testColumnDateTime() {

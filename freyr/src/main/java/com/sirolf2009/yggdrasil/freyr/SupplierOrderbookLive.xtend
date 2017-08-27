@@ -60,7 +60,7 @@ class SupplierOrderbookLive implements Supplier<Optional<TableOrderbook>> {
 		lastIDReference.set(trades.getlastID)
 		return result
 	}
-
+	
 	def parseOrderbook(OrderBook orderbook, DoubleColumn last, DoubleColumn bought, DoubleColumn sold) {
 		val datetimeColumn = new DateTimeColumn("datetime")
 		datetimeColumn.append(LocalDateTime.now())

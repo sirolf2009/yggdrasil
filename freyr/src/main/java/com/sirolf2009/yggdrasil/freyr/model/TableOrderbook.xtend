@@ -1,14 +1,16 @@
 package com.sirolf2009.yggdrasil.freyr.model
 
 import java.util.List
+import java.util.stream.Stream
+import org.eclipse.xtend.lib.annotations.Data
+import tech.tablesaw.api.ColumnType
 import tech.tablesaw.api.DateTimeColumn
 import tech.tablesaw.api.DoubleColumn
 import tech.tablesaw.api.Table
 import tech.tablesaw.columns.Column
 
 import static tech.tablesaw.api.ColumnType.*
-import org.eclipse.xtend.lib.annotations.Data
-import tech.tablesaw.api.ColumnType
+import java.util.stream.Collectors
 
 class TableOrderbook extends Table {
 	
@@ -77,6 +79,46 @@ class TableOrderbook extends Table {
 			}
 		]
 		return columns
+	}
+	
+	def static dateTimeColumn() {
+		return new DateTimeColumn("datetime")
+	}
+	
+	def static lastColumn() {
+		return new DoubleColumn("last")
+	}
+	
+	def static boughtColumn() {
+		return new DoubleColumn("bought")
+	}
+	
+	def static soldColumn() {
+		return new DoubleColumn("sold")
+	}
+	
+	def static bidColumns() {
+		(0 ..< 15).toList().stream().flatMap[Stream.of(bidPriceColumn(it), bidAmountColumn(it))].collect(Collectors.toList)
+	}
+	
+	def static askColumns() {
+		(0 ..< 15).toList().stream().flatMap[Stream.of(askPriceColumn(it), askAmountColumn(it))].collect(Collectors.toList)
+	}
+	
+	def static bidPriceColumn(int index) {
+		return new DoubleColumn('''bid_price_«index»''')
+	}
+	
+	def static bidAmountColumn(int index) {
+		return new DoubleColumn('''bid_amount_«index»''')
+	}
+	
+	def static askPriceColumn(int index) {
+		return new DoubleColumn('''ask_price_«index»''')
+	}
+	
+	def static askAmountColumn(int index) {
+		return new DoubleColumn('''ask_amount_«index»''')
 	}
 	
 	public static val OrderbookColumns = #[
