@@ -18,6 +18,9 @@ import org.deeplearning4j.eval.RegressionEvaluation
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator
 import com.sirolf2009.yggdrasil.sif.transmutation.OrderbookNormaliseDiffStdDev
+import java.net.InetSocketAddress
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 
 class Vor {
 
@@ -28,30 +31,25 @@ class Vor {
 		extension val arguments = new Arguments()
 		JCommander.newBuilder().addObject(arguments).build().parse(args)
 		log.info("Starting with arguments: " + arguments)
-//		LoadersDatabase.getDatapointsLarge('''http://«influxHost»:«influxPort»''', 60*60*24*80, new File(baseDir, "orderbook"), 8)
 		train(arguments)
 	}
 
 	def static train(extension Arguments arguments) {
-		val networkFolder = new File(baseDir, "predict-net")
+		val networkFolder = new File(baseDir, networkFolder)
 		networkFolder.mkdirs()
 		if(networkFolder.list.size > 0) {
 			throw new IllegalStateException("The network folder is not empty!")
 		}
-		val predictionFolder = new File(baseDir, "predict-csv")
-		predictionFolder.mkdirs()
-		if(predictionFolder.list.size > 0) {
-			throw new IllegalStateException("The prediction folder is not empty!")
-		}
 
-		val session = Cluster.builder.addContactPoint("freyr").build().connect()
-		val data = LoadersDatabase.getOrderbook(session, 1000)
+		val cluster = Cluster.builder.addContactPointsWithPorts(new InetSocketAddress("freyr", 80), new InetSocketAddress("freyr", 9042)).build()
+		val session = cluster.connect()
+		val data = LoadersDatabase.getOrderbook(session, Duration.ofHours(hoursOfData).get(ChronoUnit.SECONDS))
 		session.close()
+		cluster.close()
 		new OrderbookNormaliseDiffStdDev().accept(data)
 		extension val format = new PrepareOrderbook(baseDir, data, steps, minibatch).call()
 		extension val datasets = getData(format)
 		val net = new RNN(numOfVariables).get()
-		val epochs = 100
 		log.info("Training...")
 		(0 ..< epochs).forEach [
 			net.fit(trainData)

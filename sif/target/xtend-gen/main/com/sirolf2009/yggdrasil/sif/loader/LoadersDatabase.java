@@ -17,7 +17,7 @@ import org.eclipse.xtext.xbase.lib.IterableExtensions;
 public class LoadersDatabase {
   private final static Logger log = LogManager.getLogger();
   
-  public static TableOrderbook getOrderbook(final Session session, final int count) {
+  public static TableOrderbook getOrderbook(final Session session, final long count) {
     TableOrderbook _xblockexpression = null;
     {
       final Mapper<OrderbookTick> mapper = new MappingManager(session).<OrderbookTick>mapper(OrderbookTick.class);

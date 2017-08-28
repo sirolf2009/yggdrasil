@@ -11,7 +11,7 @@ class LoadersDatabase {
 
 	static val log = LogManager.logger
 	
-	def static getOrderbook(Session session, int count) {
+	def static getOrderbook(Session session, long count) {
 		val mapper = new MappingManager(session).mapper(OrderbookTick)
 		val query = '''SELECT * FROM freyr.orderbook WHERE exchange='GDAX' ORDER BY datetime LIMIT «count»;'''
 		log.info(query)
