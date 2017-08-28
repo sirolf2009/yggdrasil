@@ -165,16 +165,14 @@ class SketchOrderbookHistoryPredict extends PApplet {
 	}
 
 	def predict(TableOrderbook data) {
-		val normalised = data.fullCopy()
-		new OrderbookNormaliseDiffStdDev().accept(normalised)
-		val date = normalised.date.get(data.date.size - 1)
-		return Nd4j.vstack(Predict.predictMultiStep(net, normalised, 60)).toTable(date, data.name + "-predicted")
+		val date = data.date.get(data.date.size - 1)
+		return Nd4j.vstack(Predict.predictMultiStep(net, data, ahead)).toTable(date, data.name + "-predicted")
 	}
 
 	def static void main(String[] args) {
 		val take = 15
 		val supplier = new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take)
-		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("../vor/data/predict-net-small/predict_99.zip"), 60)
+		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("network.zip"), 60)
 	}
 
 	def static getFirst(Supplier<Optional<TableOrderbook>> supplier) {
