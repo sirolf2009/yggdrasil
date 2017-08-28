@@ -4,6 +4,7 @@ import com.sirolf2009.yggdrasil.freyr.model.TableOrderbook
 import java.util.Arrays
 import java.util.function.Consumer
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
+import java.util.stream.Collectors
 
 class OrderbookNormaliseDiffStdDev implements Consumer<TableOrderbook> {
 
@@ -11,11 +12,12 @@ class OrderbookNormaliseDiffStdDev implements Consumer<TableOrderbook> {
 		val priceColumns = bidPrices + askPrices
 		val amountColumns =  askAmounts + bidAmounts
 		val lastColumn = getLast()
-		val lastColumnOriginal = lastColumn.copy()
+		val lastColumnOriginal = lastColumn.copy().toList().stream.map[Double.valueOf(it)].collect(Collectors.toList())
 		Arrays.stream(rows).forEach [
 			val lastPrice = lastColumn.get(it)
 			if(it > 0) {
-				lastColumn.set(it, lastPrice-lastColumnOriginal.get(it-1))
+				val previousLastPrice = lastColumnOriginal.get(it-1)
+				lastColumn.set(it, lastPrice-previousLastPrice)
 			} else {
 				lastColumn.set(it, 0d)
 			}
