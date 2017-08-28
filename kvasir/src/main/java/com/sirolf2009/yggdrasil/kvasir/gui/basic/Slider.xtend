@@ -42,7 +42,6 @@ import processing.event.MouseEvent
 	}
 	
 	override draw() {
-		drawBounds
 	}
 
 	def void correctKnobPosition() {
