@@ -105,7 +105,7 @@ class SketchOrderbookHistoryPredict extends PApplet {
 			(0 ..< Math.min(data.rowCount - 1, zoom)).forEach [ indexInScreen |
 				data.columns.stream.skip(1).collect(Collectors.toList()).forEach [ it, indexInFrame |
 					if(name.contains("price")) {
-						val value = Math.abs((it as DoubleColumn).get(data.rowCount - 1 - indexInScreen).floatValue())
+						val value = Math.abs((it as DoubleColumn).get(data.rowCount - 1 - indexInScreen).floatValue()) * if(name.contains("bid")) -1 else 1
 						points.add(new GPoint(zoom - indexInScreen, value, name))
 					}
 				]
@@ -129,7 +129,7 @@ class SketchOrderbookHistoryPredict extends PApplet {
 			(0 ..< Math.min(predictionData.rowCount - 1, ahead)).forEach [ indexInScreen |
 				predictionData.columns.stream.skip(1).collect(Collectors.toList()).forEach [ it, indexInFrame |
 					if(name.contains("price")) {
-						val value = Math.abs((it as DoubleColumn).get(predictionData.rowCount - 1 - indexInScreen).floatValue())
+						val value = Math.abs((it as DoubleColumn).get(predictionData.rowCount - 1 - indexInScreen).floatValue()) * if(name.contains("bid")) -1 else 1
 						predictions.add(new GPoint(ahead - indexInScreen, value, name))
 						if(value.isNaN) {
 							hasNaN.set(true)
@@ -174,7 +174,7 @@ class SketchOrderbookHistoryPredict extends PApplet {
 	def static void main(String[] args) {
 		val take = 15
 		val supplier = new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take)
-		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("../vor/data/predict-net/predict_6.zip"), 2)
+		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("../vor/data/predict-net-small/predict_99.zip"), 60)
 	}
 
 	def static getFirst(Supplier<Optional<TableOrderbook>> supplier) {

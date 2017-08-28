@@ -11,10 +11,11 @@ class OrderbookNormaliseDiffStdDev implements Consumer<TableOrderbook> {
 		val priceColumns = bidPrices + askPrices
 		val amountColumns =  askAmounts + bidAmounts
 		val lastColumn = getLast()
+		val lastColumnOriginal = lastColumn.copy()
 		Arrays.stream(rows).forEach [
 			val lastPrice = lastColumn.get(it)
 			if(it > 0) {
-				lastColumn.set(it, lastPrice-lastColumn.get(it-1))
+				lastColumn.set(it, lastPrice-lastColumnOriginal.get(it-1))
 			} else {
 				lastColumn.set(it, 0d)
 			}
