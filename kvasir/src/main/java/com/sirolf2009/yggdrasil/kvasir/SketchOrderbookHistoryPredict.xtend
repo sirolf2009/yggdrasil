@@ -41,7 +41,6 @@ class SketchOrderbookHistoryPredict extends PApplet {
 	var TableOrderbook predictionData
 	val int take
 	val MultiLayerNetwork net
-	val int ahead
 	var GPlot orderbook
 	var GPlot prediction
 	var ControlP5 cp5
@@ -49,12 +48,11 @@ class SketchOrderbookHistoryPredict extends PApplet {
 	var zoom = 60
 	var PFont font
 
-	new(TableOrderbook data, Supplier<Optional<TableOrderbook>> supplier, int take, MultiLayerNetwork net, int ahead) {
+	new(TableOrderbook data, Supplier<Optional<TableOrderbook>> supplier, int take, MultiLayerNetwork net) {
 		this.supplier = supplier
 		this.take = take
 		this.data = data
 		this.net = net
-		this.ahead = ahead
 		this.predictionData = data.predict()
 		new Thread [
 			while(true) {
@@ -80,14 +78,14 @@ class SketchOrderbookHistoryPredict extends PApplet {
 		surface.title = this.getClass().asSubclass(this.getClass()).simpleName
 		orderbook = new GPlot(this)
 		orderbook.title.text = "Orderbook"
-		orderbook.setDim(450, 680)
+		orderbook.setOuterDim(width/2, 680)
 		orderbook.setPos(0, 0)
 		orderbook.pointColors = Stream.concat(IntStream.range(0, take).map[color(0, 255, 0, 200)].boxed, IntStream.range(0, take).map[color(255, 0, 0, 200)].boxed).collect(Collectors.toList())
 
 		prediction = new GPlot(this)
 		prediction.title.text = "Orderbook Predicted"
-		prediction.setDim(450, 680)
-		prediction.setPos(450, 0)
+		prediction.setOuterDim(width/2, 680)
+		prediction.setPos(width/2, 0)
 		prediction.pointColors = Stream.concat(IntStream.range(0, take).map[color(0, 255, 0, 200)].boxed, IntStream.range(0, take).map[color(255, 0, 0, 200)].boxed).collect(Collectors.toList())
 
 		cp5 = new ControlP5(this)
@@ -100,6 +98,11 @@ class SketchOrderbookHistoryPredict extends PApplet {
 
 	override synchronized draw() {
 		background(255)
+		orderbook.setOuterDim(width/2, 680)
+		orderbook.setPos(0, 0)
+		prediction.setOuterDim(width/2, 680)
+		prediction.setPos(width/2, 0)
+		
 		{
 			val points = new GPointsArray(zoom * take * 2)
 			(0 ..< Math.min(data.rowCount - 1, zoom)).forEach [ indexInScreen |
@@ -122,15 +125,17 @@ class SketchOrderbookHistoryPredict extends PApplet {
 				endDraw()
 			]
 		}
+		
+		prediction.setYLim(orderbook.YLim.get(0), orderbook.YLim.get(1));
 
 		{
 			val hasNaN = new AtomicBoolean(false)
-			val predictions = new GPointsArray(ahead * take * 2)
-			(0 ..< Math.min(predictionData.rowCount - 1, ahead)).forEach [ indexInScreen |
+			val predictions = new GPointsArray(zoom * take * 2)
+			(0 ..< Math.min(predictionData.rowCount - 1, zoom)).forEach [ indexInScreen |
 				predictionData.columns.stream.skip(1).collect(Collectors.toList()).forEach [ it, indexInFrame |
 					if(name.contains("price")) {
 						val value = Math.abs((it as DoubleColumn).get(predictionData.rowCount - 1 - indexInScreen).floatValue()) * if(name.contains("bid")) -1 else 1
-						predictions.add(new GPoint(ahead - indexInScreen, value, name))
+						predictions.add(new GPoint(zoom - indexInScreen, value, name))
 						if(value.isNaN) {
 							hasNaN.set(true)
 						}
@@ -156,8 +161,8 @@ class SketchOrderbookHistoryPredict extends PApplet {
 		}
 	}
 
-	def static create(TableOrderbook data, Supplier<Optional<TableOrderbook>> supplier, int take, MultiLayerNetwork net, int ahead) {
-		runSketch(#[SketchOrderbookHistoryPredict.name], new SketchOrderbookHistoryPredict(data, supplier, take, net, ahead));
+	def static create(TableOrderbook data, Supplier<Optional<TableOrderbook>> supplier, int take, MultiLayerNetwork net) {
+		runSketch(#[SketchOrderbookHistoryPredict.name], new SketchOrderbookHistoryPredict(data, supplier, take, net));
 	}
 
 	def synchronized void zoom(float zoom) {
@@ -166,13 +171,13 @@ class SketchOrderbookHistoryPredict extends PApplet {
 
 	def predict(TableOrderbook data) {
 		val date = data.date.get(data.date.size - 1)
-		return Nd4j.vstack(Predict.predictMultiStep(net, data, ahead)).toTable(date, data.name + "-predicted")
+		return Nd4j.vstack(Predict.predictMultiStep(net, data, zoom)).toTable(date, data.name + "-predicted")
 	}
 
 	def static void main(String[] args) {
 		val take = 15
 		val supplier = new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take)
-		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("network.zip"), 60)
+		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("network3.zip"))
 	}
 
 	def static getFirst(Supplier<Optional<TableOrderbook>> supplier) {
