@@ -3,6 +3,7 @@ package com.sirolf2009.yggdrasil.vor
 import com.beust.jcommander.JCommander
 import com.datastax.driver.core.Cluster
 import com.sirolf2009.yggdrasil.sif.loader.LoadersDatabase
+import com.sirolf2009.yggdrasil.sif.loader.LoadersFile
 import com.sirolf2009.yggdrasil.sif.saver.SaversFile.NetToFile
 import com.sirolf2009.yggdrasil.sif.transmutation.OrderbookNormaliseDiffStdDev
 import com.sirolf2009.yggdrasil.vor.data.Arguments
@@ -15,6 +16,7 @@ import java.text.SimpleDateFormat
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.Date
+import java.util.Optional
 import org.apache.logging.log4j.LogManager
 import org.datavec.api.records.reader.impl.csv.CSVSequenceRecordReader
 import org.datavec.api.split.NumberedFileInputSplit
@@ -22,9 +24,10 @@ import org.deeplearning4j.datasets.datavec.SequenceRecordReaderDataSetIterator
 import org.deeplearning4j.datasets.datavec.SequenceRecordReaderDataSetIterator.AlignmentMode
 import org.deeplearning4j.eval.RegressionEvaluation
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
+import org.deeplearning4j.ui.api.UIServer
+import org.deeplearning4j.ui.stats.StatsListener
+import org.deeplearning4j.ui.storage.InMemoryStatsStorage
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator
-import java.util.Optional
-import com.sirolf2009.yggdrasil.sif.loader.LoadersFile
 
 class Vor {
 
@@ -35,9 +38,10 @@ class Vor {
 		extension val arguments = new Arguments()
 		JCommander.newBuilder().addObject(arguments).build().parse(args)
 		log.info("Starting with arguments: " + arguments)
-		
+
 		val data = loadNewData(hoursOfData, steps, minibatch)
 		val net = Optional.ofNullable(network).map[LoadersFile.loadNetwork(it)].orElse(new RNN(data.format.numOfVariables).get())
+		net.enableUI
 		net.train(data, epochs)
 	}
 
@@ -49,7 +53,7 @@ class Vor {
 		}
 		new Train(datasets.trainData, epochs).andThen(new NetToFile(new File(networkFolder, "predict_" + epochs + ".zip"))).accept(net)
 	}
-	
+
 	def static loadNewData(int hoursOfData, int steps, int miniBatch) {
 		val cluster = Cluster.builder.addContactPointsWithPorts(new InetSocketAddress("freyr", 80), new InetSocketAddress("freyr", 9042)).build()
 		val session = cluster.connect()
@@ -89,6 +93,13 @@ class Vor {
 		val testData = new SequenceRecordReaderDataSetIterator(testFeatures, testLabels, miniBatchSize, -1, true, AlignmentMode.ALIGN_END)
 
 		return new TrainAndTestData(format, trainData, testData)
+	}
+
+	def static enableUI(MultiLayerNetwork net) {
+		val server = UIServer.getInstance()
+		val storage = new InMemoryStatsStorage()
+		server.attach(storage)
+		net.listeners += new StatsListener(storage)
 	}
 
 }

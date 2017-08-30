@@ -22,8 +22,8 @@ import org.nd4j.linalg.lossfunctions.LossFunctions
 			optimizationAlgo = OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT
 			iterations(1)
 			weightInit = WeightInit.XAVIER
-			updater = Updater.NESTEROVS
-			learningRate = 0.1
+			updater = Updater.RMSPROP
+			learningRate = 0.001
 			l2(0.001)
 			useRegularization = true
 		]
