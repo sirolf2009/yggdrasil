@@ -28,8 +28,8 @@ import org.nd4j.linalg.lossfunctions.LossFunctions
 			useRegularization = true
 		]
 		val config = builder.list() => [
-			layer(0, new GravesLSTM.Builder().rmsDecay(0.95).activation(Activation.TANH).updater(Updater.RMSPROP).nIn(numOfVariables).nOut(numOfVariables * 3).build())
-			layer(1, new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE).momentum(0.9).activation(Activation.IDENTITY).nIn(numOfVariables * 3).nOut(numOfVariables).build())
+			layer(0, new GravesLSTM.Builder().rmsDecay(0.095).activation(Activation.TANH).updater(Updater.NESTEROVS).nIn(numOfVariables).nOut(numOfVariables * 3).build())
+			layer(1, new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE).momentum(0.95).activation(Activation.IDENTITY).nIn(numOfVariables * 3).nOut(numOfVariables).build())
 		]
 		val net = new MultiLayerNetwork(config.build())
 		net.init()

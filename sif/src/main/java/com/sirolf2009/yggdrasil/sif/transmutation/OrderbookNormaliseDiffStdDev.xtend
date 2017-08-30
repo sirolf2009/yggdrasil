@@ -36,7 +36,7 @@ class OrderbookNormaliseDiffStdDev implements Consumer<TableOrderbook> {
 	}
 	
 	def static percentualDifference(double a, double b) {
-		return Math.abs(a - b) / ((a + b) / 2)
+		return Math.abs(a - b) / ((a + b) / 2) * 1000
 	}
 	
 	def static zScore(double value, double mean, double stdDev) {

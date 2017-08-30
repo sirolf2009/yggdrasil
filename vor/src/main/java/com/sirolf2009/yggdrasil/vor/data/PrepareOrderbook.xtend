@@ -3,6 +3,8 @@ package com.sirolf2009.yggdrasil.vor.data
 import com.sirolf2009.yggdrasil.freyr.model.TableOrderbook
 import java.io.File
 import java.nio.file.Paths
+import java.util.Collections
+import java.util.List
 import org.apache.logging.log4j.LogManager
 import org.eclipse.xtend.lib.annotations.Data
 
@@ -43,7 +45,7 @@ import static extension org.apache.commons.io.FileUtils.*
 		labelsDirTrain.clean()
 		featuresDirTest.clean()
 		labelsDirTest.clean()
-		(0 .. trainSize).toList.parallelStream.forEach [
+		(0 .. trainSize).toList.shuffle.forEach [indexInTable,it|
 			val featuresPath = Paths.get('''«featuresDirTrain.absolutePath»/train_«it».csv''')
 			val labelsPath = Paths.get('''«labelsDirTrain.absolutePath»/train_«it».csv''')
 			val set = data.rows(it, it+numberOfTimesteps)
@@ -71,6 +73,11 @@ import static extension org.apache.commons.io.FileUtils.*
 	def static clean(File folder) {
 		folder.mkdirs()
 		folder.cleanDirectory()
+	}
+	
+	def static <T> shuffle(List<T> list) {
+		Collections.shuffle(list)
+		return list
 	}
 
 }

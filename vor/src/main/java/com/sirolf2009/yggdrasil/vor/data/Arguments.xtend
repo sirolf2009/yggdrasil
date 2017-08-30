@@ -21,6 +21,6 @@ import org.eclipse.xtend.lib.annotations.ToString
 	@Parameter(names = "-s", description="The amount of steps to use before making a prediction")
 	var int steps = 60 //1 minute
 	@Parameter(names = "-mb", description="The size of the mini batches")
-	var int minibatch = 100
+	var int minibatch = 1024
 	
 }
