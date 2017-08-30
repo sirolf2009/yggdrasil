@@ -22,12 +22,12 @@ import org.datavec.api.records.reader.impl.csv.CSVSequenceRecordReader
 import org.datavec.api.split.NumberedFileInputSplit
 import org.deeplearning4j.datasets.datavec.SequenceRecordReaderDataSetIterator
 import org.deeplearning4j.datasets.datavec.SequenceRecordReaderDataSetIterator.AlignmentMode
-import org.deeplearning4j.eval.RegressionEvaluation
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.deeplearning4j.ui.api.UIServer
 import org.deeplearning4j.ui.stats.StatsListener
 import org.deeplearning4j.ui.storage.InMemoryStatsStorage
-import org.nd4j.linalg.dataset.api.iterator.DataSetIterator
+import com.sirolf2009.yggdrasil.vor.listener.Saver
+import com.sirolf2009.yggdrasil.vor.listener.RegressionEvaluation
 
 class Vor {
 
@@ -51,7 +51,7 @@ class Vor {
 		if(networkFolder.list.size > 0) {
 			throw new IllegalStateException("The network folder is not empty!")
 		}
-		new Train(datasets.trainData, epochs).andThen(new NetToFile(new File(networkFolder, "predict_" + epochs + ".zip"))).accept(net)
+		new Train(datasets.trainData, epochs, #[new Saver(networkFolder), new RegressionEvaluation(datasets.format.numOfVariables, datasets.trainData)]).andThen(new NetToFile(new File(networkFolder, "predict_" + epochs + ".zip"))).accept(net)
 	}
 
 	def static loadNewData(int hoursOfData, int steps, int miniBatch) {
@@ -64,19 +64,6 @@ class Vor {
 		val format = new PrepareOrderbook(baseDir, data, steps, miniBatch).call()
 		val datasets = getData(format)
 		return datasets
-	}
-
-	def static showRegressionEvaluation(MultiLayerNetwork net, DataSetIterator testDataIter, int numOfVariables, int epoch) {
-		val evaluation = new RegressionEvaluation(numOfVariables)
-		while(testDataIter.hasNext()) {
-			val t = testDataIter.next()
-			val features = t.getFeatureMatrix()
-			val labels = t.getLabels()
-			val predicted = net.output(features, true)
-			evaluation.evalTimeSeries(labels, predicted)
-		}
-		log.info("Epoch: " + epoch + "\n" + evaluation.stats())
-		testDataIter.reset()
 	}
 
 	def static getData(extension DataFormat format) {

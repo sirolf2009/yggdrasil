@@ -10,6 +10,8 @@ import org.eclipse.xtend.lib.annotations.Data
 
 import static extension com.sirolf2009.yggdrasil.sif.TableExtensions.*
 import static extension org.apache.commons.io.FileUtils.*
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 @Data public class PrepareOrderbook {
 
@@ -45,36 +47,41 @@ import static extension org.apache.commons.io.FileUtils.*
 		labelsDirTrain.clean()
 		featuresDirTest.clean()
 		labelsDirTest.clean()
-		(0 .. trainSize).toList.shuffle.forEach [indexInTable,it|
-			val featuresPath = Paths.get('''«featuresDirTrain.absolutePath»/train_«it».csv''')
-			val labelsPath = Paths.get('''«labelsDirTrain.absolutePath»/train_«it».csv''')
-			val set = data.rows(indexInTable, indexInTable+numberOfTimesteps)
-			set.removeColumns("datetime")
-			set.write().csv(featuresPath.toString())
-			val outcome = data.selectWhere(index(indexInTable+numberOfTimesteps))
-			outcome.removeColumns("datetime")
-			set.write().csv(labelsPath.toString())
+		val executor = Executors.newFixedThreadPool(Runtime.runtime.availableProcessors)
+		(0 .. trainSize).toList.shuffle.forEach [ indexInTable, it |
+			executor.submit [
+				val featuresPath = Paths.get('''«featuresDirTrain.absolutePath»/train_«it».csv''')
+				val labelsPath = Paths.get('''«labelsDirTrain.absolutePath»/train_«it».csv''')
+				val set = data.rows(indexInTable, indexInTable + numberOfTimesteps)
+				set.removeColumns("datetime")
+				set.write().csv(featuresPath.toString())
+				val outcome = data.selectWhere(index(indexInTable + numberOfTimesteps))
+				outcome.removeColumns("datetime")
+				set.write().csv(labelsPath.toString())
+			]
 		]
+		executor.shutdown()
+		executor.awaitTermination(10, TimeUnit.MINUTES)
 
 		(trainSize .. (numberOfTimesteps + trainSize)).toList.parallelStream.forEach [
 			val featuresPath = Paths.get('''«featuresDirTest.absolutePath»/test_«it».csv''')
 			val labelsPath = Paths.get('''«labelsDirTest.absolutePath»/test_«it».csv''')
-			val set = data.rows(it, it+numberOfTimesteps)
+			val set = data.rows(it, it + numberOfTimesteps)
 			set.removeColumns("datetime")
 			set.write().csv(featuresPath.toString())
-			val outcome = data.selectWhere(index(it+numberOfTimesteps))
+			val outcome = data.selectWhere(index(it + numberOfTimesteps))
 			outcome.removeColumns("datetime")
 			set.write().csv(labelsPath.toString())
 		]
 
-		return new DataFormat(trainSize, numberOfTimesteps, numberOfTimesteps, data.columnCount-1, miniBatchSize, baseDir, featuresDirTrain, labelsDirTrain, featuresDirTest, labelsDirTest)
+		return new DataFormat(trainSize, numberOfTimesteps, numberOfTimesteps, data.columnCount - 1, miniBatchSize, baseDir, featuresDirTrain, labelsDirTrain, featuresDirTest, labelsDirTest)
 	}
 
 	def static clean(File folder) {
 		folder.mkdirs()
 		folder.cleanDirectory()
 	}
-	
+
 	def static <T> shuffle(List<T> list) {
 		Collections.shuffle(list)
 		return list
