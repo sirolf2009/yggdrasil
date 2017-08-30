@@ -48,10 +48,10 @@ import static extension org.apache.commons.io.FileUtils.*
 		(0 .. trainSize).toList.shuffle.forEach [indexInTable,it|
 			val featuresPath = Paths.get('''«featuresDirTrain.absolutePath»/train_«it».csv''')
 			val labelsPath = Paths.get('''«labelsDirTrain.absolutePath»/train_«it».csv''')
-			val set = data.rows(it, it+numberOfTimesteps)
+			val set = data.rows(indexInTable, indexInTable+numberOfTimesteps)
 			set.removeColumns("datetime")
 			set.write().csv(featuresPath.toString())
-			val outcome = data.selectWhere(index(it+numberOfTimesteps))
+			val outcome = data.selectWhere(index(indexInTable+numberOfTimesteps))
 			outcome.removeColumns("datetime")
 			set.write().csv(labelsPath.toString())
 		]
