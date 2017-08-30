@@ -4,11 +4,17 @@ import com.beust.jcommander.JCommander
 import com.datastax.driver.core.Cluster
 import com.sirolf2009.yggdrasil.sif.loader.LoadersDatabase
 import com.sirolf2009.yggdrasil.sif.saver.SaversFile.NetToFile
+import com.sirolf2009.yggdrasil.sif.transmutation.OrderbookNormaliseDiffStdDev
 import com.sirolf2009.yggdrasil.vor.data.Arguments
 import com.sirolf2009.yggdrasil.vor.data.DataFormat
 import com.sirolf2009.yggdrasil.vor.data.PrepareOrderbook
 import com.sirolf2009.yggdrasil.vor.data.TrainAndTestData
 import java.io.File
+import java.net.InetSocketAddress
+import java.text.SimpleDateFormat
+import java.time.Duration
+import java.time.temporal.ChronoUnit
+import java.util.Date
 import org.apache.logging.log4j.LogManager
 import org.datavec.api.records.reader.impl.csv.CSVSequenceRecordReader
 import org.datavec.api.split.NumberedFileInputSplit
@@ -17,10 +23,8 @@ import org.deeplearning4j.datasets.datavec.SequenceRecordReaderDataSetIterator.A
 import org.deeplearning4j.eval.RegressionEvaluation
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator
-import com.sirolf2009.yggdrasil.sif.transmutation.OrderbookNormaliseDiffStdDev
-import java.net.InetSocketAddress
-import java.time.Duration
-import java.time.temporal.ChronoUnit
+import java.util.Optional
+import com.sirolf2009.yggdrasil.sif.loader.LoadersFile
 
 class Vor {
 
@@ -31,31 +35,31 @@ class Vor {
 		extension val arguments = new Arguments()
 		JCommander.newBuilder().addObject(arguments).build().parse(args)
 		log.info("Starting with arguments: " + arguments)
-		train(arguments)
+		
+		val data = loadNewData(hoursOfData, steps, minibatch)
+		val net = Optional.ofNullable(network).map[LoadersFile.loadNetwork(it)].orElse(new RNN(data.format.numOfVariables).get())
+		net.train(data, epochs)
 	}
 
-	def static train(extension Arguments arguments) {
-		val networkFolder = new File(baseDir, networkFolder)
+	def static train(MultiLayerNetwork net, TrainAndTestData datasets, int epochs) {
+		val networkFolder = new File(baseDir, new SimpleDateFormat("yyyy-MM-dd'T'HH_mm_ss").format(new Date()))
 		networkFolder.mkdirs()
 		if(networkFolder.list.size > 0) {
 			throw new IllegalStateException("The network folder is not empty!")
 		}
-
+		new Train(datasets.trainData, epochs).andThen(new NetToFile(new File(networkFolder, "predict_" + epochs + ".zip"))).accept(net)
+	}
+	
+	def static loadNewData(int hoursOfData, int steps, int miniBatch) {
 		val cluster = Cluster.builder.addContactPointsWithPorts(new InetSocketAddress("freyr", 80), new InetSocketAddress("freyr", 9042)).build()
 		val session = cluster.connect()
 		val data = LoadersDatabase.getOrderbook(session, Duration.ofHours(hoursOfData).get(ChronoUnit.SECONDS))
 		session.close()
 		cluster.close()
 		new OrderbookNormaliseDiffStdDev().accept(data)
-		extension val format = new PrepareOrderbook(baseDir, data, steps, minibatch).call()
-		extension val datasets = getData(format)
-		val net = new RNN(numOfVariables).get()
-		log.info("Training...")
-		(0 ..< epochs).forEach [
-			net.fit(trainData)
-			trainData.reset()
-			new NetToFile(new File(networkFolder, "predict_" + it + ".zip")).accept(net)
-		]
+		val format = new PrepareOrderbook(baseDir, data, steps, miniBatch).call()
+		val datasets = getData(format)
+		return datasets
 	}
 
 	def static showRegressionEvaluation(MultiLayerNetwork net, DataSetIterator testDataIter, int numOfVariables, int epoch) {
@@ -84,7 +88,7 @@ class Vor {
 		testLabels.initialize(new NumberedFileInputSplit('''«labelsDirTest.absolutePath»/test_%d.csv''', trainSize, trainSize + testSize))
 		val testData = new SequenceRecordReaderDataSetIterator(testFeatures, testLabels, miniBatchSize, -1, true, AlignmentMode.ALIGN_END)
 
-		return new TrainAndTestData(trainData, testData)
+		return new TrainAndTestData(format, trainData, testData)
 	}
 
 }

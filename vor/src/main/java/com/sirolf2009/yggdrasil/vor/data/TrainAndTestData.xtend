@@ -4,6 +4,7 @@ import org.eclipse.xtend.lib.annotations.Data
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator
 
 @Data class TrainAndTestData {
+	DataFormat format
 	DataSetIterator trainData
 	DataSetIterator testData
 }
