@@ -23,12 +23,12 @@ import org.nd4j.linalg.lossfunctions.LossFunctions
 			iterations(1)
 			weightInit = WeightInit.XAVIER
 			updater = Updater.RMSPROP
-			learningRate = 0.001
+			learningRate = 0.00001
 			l2(0.001)
 			useRegularization = true
 		]
 		val config = builder.list() => [
-			layer(0, new GravesLSTM.Builder().rmsDecay(0.095).activation(Activation.TANH).updater(Updater.NESTEROVS).nIn(numOfVariables).nOut(numOfVariables * 3).build())
+			layer(0, new GravesLSTM.Builder().rmsDecay(0.95).activation(Activation.TANH).updater(Updater.RMSPROP).nIn(numOfVariables).nOut(numOfVariables * 3).build())
 			layer(1, new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE).momentum(0.95).activation(Activation.IDENTITY).nIn(numOfVariables * 3).nOut(numOfVariables).build())
 		]
 		val net = new MultiLayerNetwork(config.build())
