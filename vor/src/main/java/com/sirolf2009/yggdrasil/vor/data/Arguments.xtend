@@ -8,10 +8,12 @@ import org.eclipse.xtend.lib.annotations.ToString
 @Accessors @EqualsHashCode @ToString class Arguments {
 	
 	//FOLDERS
-	@Parameter(names = "-n", description="The folder to save the networks in")
+	@Parameter(names = "-f", description="The folder to save the networks in")
 	var String networkFolder = "predict-net"
 	
 	//TRAINING
+	@Parameter(names = "-n", description="The network to re-train")
+	var String network = null
 	@Parameter(names = "-h", description="The amount of hours of data")
 	var int hoursOfData = 24
 	@Parameter(names = "-e", description="The amount of epochs")
