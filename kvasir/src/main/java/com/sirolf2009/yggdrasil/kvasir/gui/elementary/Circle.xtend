@@ -1,6 +1,6 @@
 package com.sirolf2009.yggdrasil.kvasir.gui.elementary
 
-import com.sirolf2009.yggdrasil.kvasir.Drawable
+import com.sirolf2009.yggdrasil.kvasir.gui.Drawable
 import java.awt.Color
 import processing.core.PApplet
 import java.awt.Rectangle

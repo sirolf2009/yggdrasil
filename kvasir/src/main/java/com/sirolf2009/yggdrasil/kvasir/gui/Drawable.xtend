@@ -1,4 +1,4 @@
-package com.sirolf2009.yggdrasil.kvasir
+package com.sirolf2009.yggdrasil.kvasir.gui
 
 import java.awt.Color
 import java.awt.Rectangle
@@ -65,7 +65,7 @@ import processing.event.MouseEvent
 	}
 	
 	def stroke(Color it) {
-		fill(RGB, alpha)
+		stroke(RGB, alpha)
 	}
 
 	def matrix((PApplet)=>void work) {
