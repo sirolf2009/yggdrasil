@@ -1,6 +1,8 @@
 package com.sirolf2009.yggdrasil.freyr.model
 
+import java.util.ArrayList
 import java.util.List
+import java.util.stream.Collectors
 import java.util.stream.Stream
 import org.eclipse.xtend.lib.annotations.Data
 import tech.tablesaw.api.ColumnType
@@ -10,10 +12,12 @@ import tech.tablesaw.api.Table
 import tech.tablesaw.columns.Column
 
 import static tech.tablesaw.api.ColumnType.*
-import java.util.stream.Collectors
 
 class TableOrderbook extends Table {
 	
+	new(String name) {
+		this(name, createColumns())
+	}
 	new(String name, Column... columns) {
 		super(name, columns.validOrThrow)
 	}
@@ -22,7 +26,7 @@ class TableOrderbook extends Table {
 	}
 	
 	def DateTimeColumn getDate() {
-		return dateTimeColumn("datetime") //TODO do I want this? I cannot convert to and from INDArray and keep it, also not really *that* useful for charting
+		return dateTimeColumn("datetime")
 	}
 	
 	def DoubleColumn getLast() {
@@ -35,6 +39,13 @@ class TableOrderbook extends Table {
 	
 	def DoubleColumn getSold() {
 		return doubleColumn("sold")
+	}
+	
+	def List<DoubleColumn> getPrices() {
+		val list = new ArrayList()
+		list += bidPrices
+		list += askPrices
+		return list
 	}
 	
 	def List<DoubleColumn> getBids() {
@@ -81,43 +92,54 @@ class TableOrderbook extends Table {
 		return columns
 	}
 	
-	def static dateTimeColumn() {
+	def static createColumns() {
+		val columns = new ArrayList<Column>()
+		columns += newDateTimeColumn()
+		columns += newLastColumn()
+		columns += newBoughtColumn()
+		columns += newSoldColumn()
+		columns += newBidColumns()
+		columns += newAskColumns()
+		columns
+	}
+	
+	def static newDateTimeColumn() {
 		return new DateTimeColumn("datetime")
 	}
 	
-	def static lastColumn() {
+	def static newLastColumn() {
 		return new DoubleColumn("last")
 	}
 	
-	def static boughtColumn() {
+	def static newBoughtColumn() {
 		return new DoubleColumn("bought")
 	}
 	
-	def static soldColumn() {
+	def static newSoldColumn() {
 		return new DoubleColumn("sold")
 	}
 	
-	def static bidColumns() {
-		(0 ..< 15).toList().stream().flatMap[Stream.of(bidPriceColumn(it), bidAmountColumn(it))].collect(Collectors.toList)
+	def static newBidColumns() {
+		(0 ..< 15).toList().stream().flatMap[Stream.of(newBidPriceColumn(it), newBidAmountColumn(it))].collect(Collectors.toList)
 	}
 	
-	def static askColumns() {
-		(0 ..< 15).toList().stream().flatMap[Stream.of(askPriceColumn(it), askAmountColumn(it))].collect(Collectors.toList)
+	def static newAskColumns() {
+		(0 ..< 15).toList().stream().flatMap[Stream.of(newAskPriceColumn(it), newAskAmountColumn(it))].collect(Collectors.toList)
 	}
 	
-	def static bidPriceColumn(int index) {
+	def static newBidPriceColumn(int index) {
 		return new DoubleColumn('''bid_price_«index»''')
 	}
 	
-	def static bidAmountColumn(int index) {
+	def static newBidAmountColumn(int index) {
 		return new DoubleColumn('''bid_amount_«index»''')
 	}
 	
-	def static askPriceColumn(int index) {
+	def static newAskPriceColumn(int index) {
 		return new DoubleColumn('''ask_price_«index»''')
 	}
 	
-	def static askAmountColumn(int index) {
+	def static newAskAmountColumn(int index) {
 		return new DoubleColumn('''ask_amount_«index»''')
 	}
 	

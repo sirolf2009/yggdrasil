@@ -7,6 +7,14 @@ import tech.tablesaw.io.csv.CsvReadOptions
 
 class TestData {
 
+	def static getOrderbookRealLarge() {
+		new TableOrderbook(Table.read().csv(reader(TestData.classLoader.getResourceAsStream("orderbook-real-large.csv"), "Orderbook-Real-Large")))
+	}
+
+	def static getOrderbookReal() {
+		new TableOrderbook(Table.read().csv(reader(TestData.classLoader.getResourceAsStream("orderbook-real.csv"), "Orderbook-Real")))
+	}
+
 	def static getOrderbookSimple() {
 		new TableOrderbook(Table.read().csv(reader(TestData.classLoader.getResourceAsStream("orderbook-simple.csv"), "Orderbook-Simple")))
 	}

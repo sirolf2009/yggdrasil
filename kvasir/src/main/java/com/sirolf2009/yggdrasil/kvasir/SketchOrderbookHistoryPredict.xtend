@@ -3,11 +3,8 @@ package com.sirolf2009.yggdrasil.kvasir
 import com.sirolf2009.yggdrasil.freyr.Arguments
 import com.sirolf2009.yggdrasil.freyr.SupplierOrderbookLive
 import com.sirolf2009.yggdrasil.freyr.model.TableOrderbook
-import com.sirolf2009.yggdrasil.kvasir.gui.basic.Slider
 import com.sirolf2009.yggdrasil.sif.loader.LoadersFile
 import com.sirolf2009.yggdrasil.sif.transmutation.OrderbookNormaliseDiffStdDev
-import com.sirolf2009.yggdrasil.vor.Predict
-import controlP5.ControlP5
 import grafica.GPlot
 import grafica.GPoint
 import grafica.GPointsArray
@@ -21,12 +18,11 @@ import java.util.stream.Stream
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.knowm.xchange.currency.CurrencyPair
 import org.knowm.xchange.gdax.GDAXExchange
-import org.nd4j.linalg.factory.Nd4j
 import processing.core.PApplet
 import processing.core.PFont
 import tech.tablesaw.api.DoubleColumn
 
-import static extension com.sirolf2009.yggdrasil.sif.TableExtensions.*
+import static extension com.sirolf2009.yggdrasil.vor.Predict.*
 
 class SketchOrderbookHistoryPredict extends PApplet {
 
@@ -37,8 +33,9 @@ class SketchOrderbookHistoryPredict extends PApplet {
 	val MultiLayerNetwork net
 	var GPlot orderbook
 	var GPlot prediction
-	var ControlP5 cp5
-	var Slider sliderZoom
+	var GPlot trades
+	var GPlot tradesPredicted
+//	var Slider sliderZoom
 	var zoom = 60
 	var PFont font
 
@@ -47,20 +44,21 @@ class SketchOrderbookHistoryPredict extends PApplet {
 		this.take = take
 		this.data = data
 		this.net = net
-		this.predictionData = data.predict()
+		this.predictionData = net.predictMultiStepTable(data, zoom)
 		new Thread [
 			while(true) {
 				val newData = supplier.get()
 				newData.ifPresent [
-					appendData()
+					this.data = it
+					this.predictionData = net.predictMultiStepTable(this.data, zoom)
 				]
 			}
 		].start()
 	}
 
-	def synchronized appendData(TableOrderbook data) {
+	def synchronized void appendData(TableOrderbook data) {
 		this.data.append(data)
-		this.predictionData = this.data.predict()
+		this.predictionData = net.predictMultiStepTable(this.data, zoom)
 	}
 
 	override settings() {
@@ -72,32 +70,43 @@ class SketchOrderbookHistoryPredict extends PApplet {
 		surface.title = this.getClass().asSubclass(this.getClass()).simpleName
 		orderbook = new GPlot(this)
 		orderbook.title.text = "Orderbook"
-		orderbook.setOuterDim(width / 2, 680)
+		orderbook.setOuterDim(width / 2, height / 2)
 		orderbook.setPos(0, 0)
-		orderbook.pointColors = Stream.concat(IntStream.range(0, take).map[color(0, 255, 0, 200)].boxed, IntStream.range(0, take).map[color(255, 0, 0, 200)].boxed).collect(Collectors.toList())
+		orderbook.pointColors = Stream.concat(IntStream.range(0, take).map[color(20, 245, 20, 200)].boxed, IntStream.range(0, take).map[color(255, 40, 40, 200)].boxed).collect(Collectors.toList())
 
 		prediction = new GPlot(this)
 		prediction.title.text = "Orderbook Predicted"
-		prediction.setOuterDim(width / 2, 680)
+		prediction.setOuterDim(width / 2, height / 2)
 		prediction.setPos(width / 2, 0)
-		prediction.pointColors = Stream.concat(IntStream.range(0, take).map[color(0, 255, 0, 200)].boxed, IntStream.range(0, take).map[color(255, 0, 0, 200)].boxed).collect(Collectors.toList())
+		prediction.pointColors = Stream.concat(IntStream.range(0, take).map[color(20, 245, 20, 200)].boxed, IntStream.range(0, take).map[color(255, 40, 40, 200)].boxed).collect(Collectors.toList())
 
-		cp5 = new ControlP5(this)
+		trades = new GPlot(this)
+		trades.title.text = "Trades"
+		trades.setOuterDim(width / 2, height / 2)
+		trades.setPos(0, height / 2)
 
-		sliderZoom = new Slider(this, 50, 700, 924, 20, 0, 60 * 16)
-		sliderZoom.current = 60
+		tradesPredicted = new GPlot(this)
+		tradesPredicted.title.text = "Trades Predicted"
+		tradesPredicted.setOuterDim(width / 2, height / 2)
+		tradesPredicted.setPos(width / 2, height / 2)
 
+//		sliderZoom = new Slider(this, 50, 700, 924, 20, 0, 60 * 16)
+//		sliderZoom.current = 60
 		font = createFont("Arial", 16, true)
 	}
 
 	override synchronized draw() {
 		background(255)
-		orderbook.setOuterDim(width / 2, 680)
+		orderbook.setOuterDim(width / 2, height / 2)
 		orderbook.setPos(0, 0)
-		prediction.setOuterDim(width / 2, 680)
+		prediction.setOuterDim(width / 2, height / 2)
 		prediction.setPos(width / 2, 0)
-		
-		zoom = round(sliderZoom.current as float)
+		trades.setOuterDim(width / 2, height / 2)
+		trades.setPos(0, height / 2)
+		tradesPredicted.setOuterDim(width / 2, height / 2)
+		tradesPredicted.setPos(width / 2, height / 2)
+
+		zoom = round(60 as float)
 
 		{
 			val points = new GPointsArray(zoom * take * 2)
@@ -155,21 +164,56 @@ class SketchOrderbookHistoryPredict extends PApplet {
 				text("NaN issues!", 700, 340)
 			}
 		}
+
+		{
+			val points = new GPointsArray(zoom)
+			(0 ..< Math.min(data.rowCount - 1, zoom)).forEach [
+				points.add(new GPoint(zoom - it, data.getLast().get(data.rowCount - 1 - it).floatValue, "last"))
+			]
+			trades.points = points
+			trades => [
+				beginDraw()
+				drawBackground()
+				drawBox()
+				drawYAxis()
+				drawXAxis()
+				drawTitle()
+				drawLines()
+				endDraw()
+			]
+			trades.activatePointLabels()
+		}
+
+		{
+			val points = new GPointsArray(zoom)
+			(0 ..< Math.min(predictionData.rowCount - 1, zoom)).forEach [
+				points.add(
+					new GPoint(zoom - it, predictionData.getLast().get(predictionData.rowCount - 1 - it).floatValue, "last")
+				)
+			]
+			tradesPredicted.points = points
+			tradesPredicted => [
+				beginDraw()
+				drawBackground()
+				drawBox()
+				drawYAxis()
+				drawXAxis()
+				drawTitle()
+				drawLines()
+				endDraw()
+			]
+			tradesPredicted.activatePointLabels()
+		}
 	}
 
 	def static create(TableOrderbook data, Supplier<Optional<TableOrderbook>> supplier, int take, MultiLayerNetwork net) {
 		runSketch(#[SketchOrderbookHistoryPredict.name], new SketchOrderbookHistoryPredict(data, supplier, take, net));
 	}
 
-	def predict(TableOrderbook data) {
-		val date = data.date.get(data.date.size - 1)
-		return Nd4j.vstack(Predict.predictMultiStep(net, data, zoom)).toTable(date, data.name + "-predicted")
-	}
-	
 	def static void main(String[] args) {
 		val take = 15
 		val supplier = new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take)
-		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("network.zip"))
+		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("network_158.zip"))
 	}
 
 	def static getFirst(Supplier<Optional<TableOrderbook>> supplier) {
@@ -183,10 +227,15 @@ class SketchOrderbookHistoryPredict extends PApplet {
 
 	def static Supplier<Optional<TableOrderbook>> normalised(Supplier<Optional<TableOrderbook>> supplier) {
 		val normalise = new OrderbookNormaliseDiffStdDev()
+		val table = new TableOrderbook("Raw")
 		return [
 			val data = supplier.get()
-			data.ifPresent(normalise)
-			data
+			return data.map [
+				table.append(it)
+				val copy = table.fullCopy()
+				normalise.accept(copy)
+				copy
+			]
 		]
 	}
 }

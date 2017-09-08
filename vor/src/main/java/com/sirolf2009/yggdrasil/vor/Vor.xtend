@@ -10,6 +10,7 @@ import com.sirolf2009.yggdrasil.vor.data.Arguments
 import com.sirolf2009.yggdrasil.vor.data.DataFormat
 import com.sirolf2009.yggdrasil.vor.data.PrepareOrderbook
 import com.sirolf2009.yggdrasil.vor.data.TrainAndTestData
+import com.sirolf2009.yggdrasil.vor.listener.Saver
 import java.io.File
 import java.net.InetSocketAddress
 import java.text.SimpleDateFormat
@@ -26,8 +27,6 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.deeplearning4j.ui.api.UIServer
 import org.deeplearning4j.ui.stats.StatsListener
 import org.deeplearning4j.ui.storage.InMemoryStatsStorage
-import com.sirolf2009.yggdrasil.vor.listener.Saver
-import com.sirolf2009.yggdrasil.vor.listener.RegressionEvaluation
 
 class Vor {
 
@@ -51,7 +50,7 @@ class Vor {
 		if(networkFolder.list.size > 0) {
 			throw new IllegalStateException("The network folder is not empty!")
 		}
-		new Train(datasets.trainData, epochs, #[new Saver(networkFolder), new RegressionEvaluation(datasets.format.numOfVariables, datasets.trainData)]).andThen(new NetToFile(new File(networkFolder, "predict_" + epochs + ".zip"))).accept(net)
+		new Train(datasets.trainData, epochs, #[new Saver(networkFolder)]).andThen(new NetToFile(new File(networkFolder, "predict_" + epochs + ".zip"))).accept(net)
 	}
 
 	def static loadNewData(int hoursOfData, int steps, int miniBatch) {

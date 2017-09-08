@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>abc</groupId>
+  <artifactId>abc</artifactId>
+  <versioning>
+    <release>0.0.1</release>
+    <versions>
+      <version>abc</version>
+      <version>0.0.1</version>
+    </versions>
+    <lastUpdated>20170831190538</lastUpdated>
+  </versioning>
+</metadata>
