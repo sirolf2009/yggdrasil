@@ -18,12 +18,12 @@ import java.time.ZoneId
 class TableExtensions {
 	
 	def static toTable(OrderbookTick tick) {
-		val datetimeColumn = TableOrderbook.dateTimeColumn()
-		val lastColumn = TableOrderbook.lastColumn()
-		val boughtColumn = TableOrderbook.boughtColumn()
-		val soldColumn = TableOrderbook.soldColumn()
-		val bidColumns = TableOrderbook.bidColumns()
-		val askColumns = TableOrderbook.askColumns()
+		val datetimeColumn = TableOrderbook.newDateTimeColumn()
+		val lastColumn = TableOrderbook.newLastColumn()
+		val boughtColumn = TableOrderbook.newBoughtColumn()
+		val soldColumn = TableOrderbook.newSoldColumn()
+		val bidColumns = TableOrderbook.newBidColumns()
+		val askColumns = TableOrderbook.newAskColumns()
 		tick => [
 			datetimeColumn.append(LocalDateTime.ofInstant(datetime.toInstant(), ZoneId.of("Europe/Amsterdam")))
 			lastColumn.append(lastPrice)
