@@ -213,7 +213,7 @@ class SketchOrderbookHistoryPredict extends PApplet {
 	def static void main(String[] args) {
 		val take = 15
 		val supplier = new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take)
-		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("network_158.zip"))
+		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("../vor/data/2017-09-10T23_43_10/network_0.zip"))
 	}
 
 	def static getFirst(Supplier<Optional<TableOrderbook>> supplier) {

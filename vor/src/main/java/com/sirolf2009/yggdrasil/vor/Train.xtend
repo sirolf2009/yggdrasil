@@ -8,6 +8,7 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.deeplearning4j.optimize.api.IterationListener
 import org.eclipse.xtend.lib.annotations.Data
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator
+import java.time.Duration
 
 @Data class Train implements Consumer<MultiLayerNetwork> {
 	
@@ -31,7 +32,9 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator
 	override accept(MultiLayerNetwork net) {
 		log.info("Training...")
 		(0 ..< epochs).forEach [epoch|
+			val start = System.currentTimeMillis() 
 			net.fit(trainData)
+			log.info("Epoch "+epoch+" completed in "+Duration.ofMillis(System.currentTimeMillis() - start))
 			trainData.reset()
 			listeners.forEach[iterationDone(net, epoch)]
 		]

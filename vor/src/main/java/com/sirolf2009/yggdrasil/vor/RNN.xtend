@@ -15,28 +15,25 @@ import org.nd4j.linalg.lossfunctions.LossFunctions
 @Data class RNN implements Supplier<MultiLayerNetwork> {
 
 	int numOfVariables
-	
+
 	override get() {
 		val builder = new NeuralNetConfiguration.Builder() => [
 			seed = 123
 			optimizationAlgo = OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT
 			iterations(1)
 			weightInit = WeightInit.XAVIER
-			updater = Updater.SGD
-			learningRate = 0.5
+			updater = Updater.ADAM
+			learningRate = 0.05
 		]
 		val config = builder.list() => [
-			layer(0, new GravesLSTM.Builder().rmsDecay(0.85).activation(Activation.TANH).updater(Updater.RMSPROP).nIn(numOfVariables).nOut(numOfVariables * 6).build())
-			layer(1, new GravesLSTM.Builder().rmsDecay(0.85).activation(Activation.TANH).updater(Updater.RMSPROP).nIn(numOfVariables * 6).nOut(numOfVariables * 6).build())
-                        layer(2, new GravesLSTM.Builder().rmsDecay(0.85).activation(Activation.TANH).updater(Updater.RMSPROP).nIn(numOfVariables * 6).nOut(numOfVariables * 6).build())
-                        layer(3, new GravesLSTM.Builder().rmsDecay(0.85).activation(Activation.TANH).updater(Updater.RMSPROP).nIn(numOfVariables * 6).nOut(numOfVariables * 6).build())
-                        layer(4, new GravesLSTM.Builder().rmsDecay(0.85).activation(Activation.TANH).updater(Updater.RMSPROP).nIn(numOfVariables * 6).nOut(numOfVariables * 6).build()) 
-			layer(5, new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE).momentum(0.85).activation(Activation.IDENTITY).nIn(numOfVariables * 6).nOut(numOfVariables).build())
+			layer(0, new GravesLSTM.Builder().activation(Activation.RELU).nIn(numOfVariables).nOut(numOfVariables * 24).build())
+			layer(1, new GravesLSTM.Builder().activation(Activation.TANH).nIn(numOfVariables * 24).nOut(numOfVariables * 24).build())
+			layer(2, new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE).activation(Activation.IDENTITY).nIn(numOfVariables * 24).nOut(numOfVariables).build())
 		]
 		val net = new MultiLayerNetwork(config.build())
 		net.init()
-		
+
 		return net
 	}
-	
+
 }

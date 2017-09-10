@@ -14,7 +14,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.nd4j</groupId>
-			<artifactId>nd4j-native-platform</artifactId>
+			<artifactId>${nd4j.backend}</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.deeplearning4j</groupId>
