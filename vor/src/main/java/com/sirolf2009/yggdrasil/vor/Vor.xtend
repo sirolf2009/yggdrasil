@@ -27,6 +27,7 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.deeplearning4j.ui.api.UIServer
 import org.deeplearning4j.ui.stats.StatsListener
 import org.deeplearning4j.ui.storage.InMemoryStatsStorage
+import com.sirolf2009.yggdrasil.vor.listener.RegressionEvaluation
 
 class Vor {
 
@@ -38,7 +39,7 @@ class Vor {
 		JCommander.newBuilder().addObject(arguments).build().parse(args)
 		log.info("Starting with arguments: " + arguments)
 
-		val data = loadNewData(hoursOfData, steps, minibatch)
+		val data = loadNewData(hoursOfData, 60, minibatch)
 		val net = Optional.ofNullable(network).map[LoadersFile.loadNetwork(it)].orElse(new RNN(data.format.numOfVariables).get())
 		net.enableUI
 		net.train(data, epochs)
@@ -50,7 +51,10 @@ class Vor {
 		if(networkFolder.list.size > 0) {
 			throw new IllegalStateException("The network folder is not empty!")
 		}
-		new Train(datasets.trainData, epochs, #[new Saver(networkFolder)]).andThen(new NetToFile(new File(networkFolder, "predict_" + epochs + ".zip"))).accept(net)
+		new Train(datasets.trainData, epochs, #[
+			new Saver(networkFolder), 
+			new RegressionEvaluation(datasets.format.numOfVariables, datasets.testData)
+		]).andThen(new NetToFile(new File(networkFolder, "predict_" + epochs + ".zip"))).accept(net)
 	}
 
 	def static loadNewData(int hoursOfData, int steps, int miniBatch) {

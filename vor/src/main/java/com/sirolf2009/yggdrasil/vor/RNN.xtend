@@ -22,13 +22,15 @@ import org.nd4j.linalg.lossfunctions.LossFunctions
 			optimizationAlgo = OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT
 			iterations(1)
 			weightInit = WeightInit.XAVIER
-			updater = Updater.ADAM
-			learningRate = 0.05
+			updater = Updater.NESTEROVS
+			learningRate = 0.001
+			dropOut = 0.5
+			useRegularization = true
 		]
 		val config = builder.list() => [
-			layer(0, new GravesLSTM.Builder().activation(Activation.RELU).nIn(numOfVariables).nOut(numOfVariables * 24).build())
-			layer(1, new GravesLSTM.Builder().activation(Activation.TANH).nIn(numOfVariables * 24).nOut(numOfVariables * 24).build())
-			layer(2, new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE).activation(Activation.IDENTITY).nIn(numOfVariables * 24).nOut(numOfVariables).build())
+			layer(0, new GravesLSTM.Builder().activation(Activation.TANH).nIn(numOfVariables).nOut(numOfVariables * 10).build())
+			layer(1, new GravesLSTM.Builder().activation(Activation.TANH).nIn(numOfVariables * 10).nOut(numOfVariables * 10).build())
+			layer(2, new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE).activation(Activation.IDENTITY).nIn(numOfVariables * 10).nOut(numOfVariables).build())
 		]
 		val net = new MultiLayerNetwork(config.build())
 		net.init()

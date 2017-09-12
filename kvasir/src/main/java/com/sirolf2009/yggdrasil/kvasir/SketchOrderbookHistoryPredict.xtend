@@ -23,6 +23,7 @@ import processing.core.PFont
 import tech.tablesaw.api.DoubleColumn
 
 import static extension com.sirolf2009.yggdrasil.vor.Predict.*
+import java.text.DecimalFormat
 
 class SketchOrderbookHistoryPredict extends PApplet {
 
@@ -131,6 +132,9 @@ class SketchOrderbookHistoryPredict extends PApplet {
 			]
 		}
 
+		zoom = round(60 as float)
+		val format = new DecimalFormat("##0.00")
+
 		prediction.setYLim(orderbook.YLim.get(0), orderbook.YLim.get(1));
 
 		{
@@ -165,6 +169,8 @@ class SketchOrderbookHistoryPredict extends PApplet {
 			}
 		}
 
+		zoom = round(60 as float)
+
 		{
 			val points = new GPointsArray(zoom)
 			(0 ..< Math.min(data.rowCount - 1, zoom)).forEach [
@@ -184,12 +190,13 @@ class SketchOrderbookHistoryPredict extends PApplet {
 			trades.activatePointLabels()
 		}
 
+		zoom = round(60 as float)
+
 		{
 			val points = new GPointsArray(zoom)
 			(0 ..< Math.min(predictionData.rowCount - 1, zoom)).forEach [
-				points.add(
-					new GPoint(zoom - it, predictionData.getLast().get(predictionData.rowCount - 1 - it).floatValue, "last")
-				)
+				val value = predictionData.getLast().get(predictionData.rowCount - 1 - it).floatValue
+				points.add(new GPoint(zoom - it, value, "last"))
 			]
 			tradesPredicted.points = points
 			tradesPredicted => [
@@ -213,7 +220,7 @@ class SketchOrderbookHistoryPredict extends PApplet {
 	def static void main(String[] args) {
 		val take = 15
 		val supplier = new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take)
-		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("../vor/data/2017-09-10T23_43_10/network_0.zip"))
+		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("../vor/data/2017-09-12T23_18_40/network_3.zip"))
 	}
 
 	def static getFirst(Supplier<Optional<TableOrderbook>> supplier) {

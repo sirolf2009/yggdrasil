@@ -54,10 +54,12 @@ import java.util.concurrent.TimeUnit
 				val labelsPath = Paths.get('''«labelsDirTrain.absolutePath»/train_«it».csv''')
 				val set = data.rows(indexInTable, indexInTable + numberOfTimesteps)
 				set.removeColumns("datetime")
+//				set.removeColumns("bid_price_15", "bid_amount_15", "bid_price_14", "bid_amount_14", "bid_price_13", "bid_amount_13", "bid_price_12", "bid_amount_12")
+//				set.removeColumns("ask_price_15", "ask_amount_15", "ask_price_14", "ask_amount_14", "ask_price_13", "ask_amount_13", "ask_price_12", "ask_amount_12")
 				set.write().csv(featuresPath.toString())
 				val outcome = data.selectWhere(index(indexInTable + numberOfTimesteps))
 				outcome.removeColumns("datetime")
-				set.write().csv(labelsPath.toString())
+				outcome.write().csv(labelsPath.toString())
 			]
 		]
 		executor.shutdown()
@@ -71,7 +73,7 @@ import java.util.concurrent.TimeUnit
 			set.write().csv(featuresPath.toString())
 			val outcome = data.selectWhere(index(it + numberOfTimesteps))
 			outcome.removeColumns("datetime")
-			set.write().csv(labelsPath.toString())
+			outcome.write().csv(labelsPath.toString())
 		]
 
 		return new DataFormat(trainSize, numberOfTimesteps, numberOfTimesteps, data.columnCount - 1, miniBatchSize, baseDir, featuresDirTrain, labelsDirTrain, featuresDirTest, labelsDirTest)
