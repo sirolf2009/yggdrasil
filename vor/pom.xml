@@ -23,6 +23,10 @@
 			<artifactId>deeplearning4j-ui_2.11</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.deeplearning4j</groupId>
+			<artifactId>arbiter-deeplearning4j</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.nd4j</groupId>
 			<artifactId>${nd4j.backend}</artifactId>
 		</dependency>

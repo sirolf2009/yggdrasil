@@ -28,6 +28,7 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.deeplearning4j.ui.api.UIServer
 import org.deeplearning4j.ui.stats.StatsListener
 import org.deeplearning4j.ui.storage.InMemoryStatsStorage
+import com.sirolf2009.yggdrasil.vor.arbiter.Arbiter
 
 class Vor {
 
@@ -40,9 +41,10 @@ class Vor {
 		log.info("Starting with arguments: " + arguments)
 
 		val data = loadNewData(hoursOfData, 60, minibatch)
-		val net = Optional.ofNullable(network).map[LoadersFile.loadNetwork(it)].orElse(new RNN(data.format.numOfVariables).get())
-		net.enableUI
-		net.train(data, epochs)
+		new Arbiter(data)
+//		val net = Optional.ofNullable(network).map[LoadersFile.loadNetwork(it)].orElse(new RNN(data.format.numOfVariables).get())
+//		net.enableUI
+//		net.train(data, epochs)
 	}
 
 	def static train(MultiLayerNetwork net, TrainAndTestData datasets, int epochs) {
