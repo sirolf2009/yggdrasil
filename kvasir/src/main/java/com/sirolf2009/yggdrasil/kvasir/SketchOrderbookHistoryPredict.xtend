@@ -23,7 +23,6 @@ import processing.core.PFont
 import tech.tablesaw.api.DoubleColumn
 
 import static extension com.sirolf2009.yggdrasil.vor.Predict.*
-import java.text.DecimalFormat
 
 class SketchOrderbookHistoryPredict extends PApplet {
 
@@ -133,7 +132,6 @@ class SketchOrderbookHistoryPredict extends PApplet {
 		}
 
 		zoom = round(60 as float)
-		val format = new DecimalFormat("##0.00")
 
 		prediction.setYLim(orderbook.YLim.get(0), orderbook.YLim.get(1));
 
@@ -220,7 +218,7 @@ class SketchOrderbookHistoryPredict extends PApplet {
 	def static void main(String[] args) {
 		val take = 15
 		val supplier = new SupplierOrderbookLive(new Arguments(), GDAXExchange.canonicalName, CurrencyPair.BTC_EUR, Duration.ofSeconds(1), take)
-		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("../vor/data/2017-09-12T23_18_40/network_3.zip"))
+		create(supplier.first, supplier.normalised, take, LoadersFile.loadNetwork("network_12.zip"))
 	}
 
 	def static getFirst(Supplier<Optional<TableOrderbook>> supplier) {
