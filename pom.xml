@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.sirolf2009.yggdrasil</groupId>
 	<artifactId>parent</artifactId>
@@ -9,6 +10,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<nd4j.version>0.9.1</nd4j.version>
 		<nd4j.backend>nd4j-native-platform</nd4j.backend>
 		<!-- <nd4j.backend>nd4j-cuda-8.0-platform</nd4j.backend> -->
 	</properties>
@@ -89,17 +91,22 @@
 			<dependency>
 				<groupId>org.deeplearning4j</groupId>
 				<artifactId>deeplearning4j-core</artifactId>
-				<version>0.8.0</version>
+				<version>${nd4j.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.deeplearning4j</groupId>
 				<artifactId>deeplearning4j-ui_2.11</artifactId>
-				<version>0.8.0</version>
+				<version>${nd4j.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nd4j</groupId>
 				<artifactId>${nd4j.backend}</artifactId>
-				<version>0.8.0</version>
+				<version>${nd4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.deeplearning4j</groupId>
+				<artifactId>arbiter-core</artifactId>
+				<version>${nd4j.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
