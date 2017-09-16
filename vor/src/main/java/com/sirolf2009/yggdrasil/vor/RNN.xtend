@@ -12,6 +12,7 @@ import org.eclipse.xtend.lib.annotations.Data
 import org.nd4j.linalg.activations.Activation
 import org.nd4j.linalg.lossfunctions.LossFunctions
 import org.deeplearning4j.nn.conf.BackpropType
+import org.deeplearning4j.nn.conf.WorkspaceMode
 
 @Data class RNN implements Supplier<MultiLayerNetwork> {
 
@@ -28,6 +29,7 @@ import org.deeplearning4j.nn.conf.BackpropType
 			learningRate = 0.001
 			dropOut = 0.5
 			useRegularization = true
+			inferenceWorkspaceMode(WorkspaceMode.SINGLE)
 		]
 		val config = builder.list() => [
 			layer(0, new GravesLSTM.Builder().activation(Activation.TANH).nIn(numOfVariables).nOut(numOfVariables * 10).build())

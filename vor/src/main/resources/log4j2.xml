@@ -9,7 +9,7 @@
 		</File>
 	</Appenders>
 	<Loggers>
-		<Root level="WARN">
+		<Root level="TRACE">
 			<AppenderRef ref="Console" />
 		</Root>
 		<Logger name="com.sirolf2009" level="INFO" additivity="false">

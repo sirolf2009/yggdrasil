@@ -60,9 +60,17 @@ class Vor {
 	}
 
 	def static loadNewData(int hoursOfData, int steps, int miniBatch) {
+		return loadNewDataPoints(Duration.ofHours(hoursOfData).get(ChronoUnit.SECONDS), steps, miniBatch)
+	}
+
+	def static loadNewDataPoints(long points, int steps, int miniBatch) {
+		return loadNewDataPoints(baseDir, points, steps, miniBatch)
+	}
+
+	def static loadNewDataPoints(File baseDir, long points, int steps, int miniBatch) {
 		val cluster = Cluster.builder.addContactPointsWithPorts(new InetSocketAddress("freyr", 80), new InetSocketAddress("freyr", 9042)).build()
 		val session = cluster.connect()
-		val data = LoadersDatabase.getOrderbook(session, Duration.ofHours(hoursOfData).get(ChronoUnit.SECONDS))
+		val data = LoadersDatabase.getOrderbook(session, points)
 		session.close()
 		cluster.close()
 		new OrderbookNormaliseDiffStdDev().accept(data)
