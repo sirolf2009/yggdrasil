@@ -13,15 +13,21 @@ public class FunctionExtensions {
   }
   
   public static <A extends Object, B extends Object> Supplier<B> operator_mappedTo(final Supplier<A> supplier, final Function<A, B> function) {
-    final Supplier<B> _function = () -> {
-      return function.apply(supplier.get());
+    final Supplier<B> _function = new Supplier<B>() {
+      @Override
+      public B get() {
+        return function.apply(supplier.get());
+      }
     };
     return _function;
   }
   
   public static <A extends Object, B extends Object> Supplier<B> operator_mappedTo(final A object, final Function<A, B> function) {
-    final Supplier<B> _function = () -> {
-      return function.apply(object);
+    final Supplier<B> _function = new Supplier<B>() {
+      @Override
+      public B get() {
+        return function.apply(object);
+      }
     };
     return _function;
   }
@@ -31,15 +37,21 @@ public class FunctionExtensions {
   }
   
   public static <A extends Object> Supplier<A> operator_not(final Function1<? super Object, ? extends A> supplier) {
-    final Supplier<A> _function = () -> {
-      return supplier.apply(null);
+    final Supplier<A> _function = new Supplier<A>() {
+      @Override
+      public A get() {
+        return supplier.apply(null);
+      }
     };
     return _function;
   }
   
   public static <A extends Object, B extends Object> Supplier<Pair<A, B>> operator_and(final Supplier<A> a, final Supplier<B> b) {
-    final Supplier<Pair<A, B>> _function = () -> {
-      return Pair.<A, B>of(a.get(), b.get());
+    final Supplier<Pair<A, B>> _function = new Supplier<Pair<A, B>>() {
+      @Override
+      public Pair<A, B> get() {
+        return Pair.<A, B>of(a.get(), b.get());
+      }
     };
     return _function;
   }

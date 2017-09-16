@@ -27,16 +27,22 @@ public class LoadersDatabase {
       _builder.append(";");
       final String query = _builder.toString();
       LoadersDatabase.log.info(query);
-      final Function1<OrderbookTick, TableOrderbook> _function = (OrderbookTick it) -> {
-        return TableExtensions.toTable(it);
-      };
-      final Function2<TableOrderbook, TableOrderbook, TableOrderbook> _function_1 = (TableOrderbook a, TableOrderbook b) -> {
-        TableOrderbook _xblockexpression_1 = null;
-        {
-          a.append(b);
-          _xblockexpression_1 = a;
+      final Function1<OrderbookTick, TableOrderbook> _function = new Function1<OrderbookTick, TableOrderbook>() {
+        @Override
+        public TableOrderbook apply(final OrderbookTick it) {
+          return TableExtensions.toTable(it);
         }
-        return _xblockexpression_1;
+      };
+      final Function2<TableOrderbook, TableOrderbook, TableOrderbook> _function_1 = new Function2<TableOrderbook, TableOrderbook, TableOrderbook>() {
+        @Override
+        public TableOrderbook apply(final TableOrderbook a, final TableOrderbook b) {
+          TableOrderbook _xblockexpression = null;
+          {
+            a.append(b);
+            _xblockexpression = a;
+          }
+          return _xblockexpression;
+        }
       };
       _xblockexpression = IterableExtensions.<TableOrderbook>reduce(IterableExtensions.<OrderbookTick, TableOrderbook>map(mapper.map(session.execute(query)), _function), _function_1);
     }
